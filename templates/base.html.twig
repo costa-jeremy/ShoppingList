@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="FR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1.0">
+    {#    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">#}
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+
+
+        <link rel="stylesheet" href=
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+              integrity=
+              "sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+              crossorigin="anonymous"
+              referrerpolicy="no-referrer" />
+    {% endblock %}
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
+</head>
+<body>
+
+<div class="container-fluid p-0 d-flex h-100">
+    <div id="bdSidebar"
+         class="d-flex flex-column
+                    flex-shrink-0
+                    p-3 bg-success
+                    text-white offcanvas-md offcanvas-start">
+        <a href="#"
+           class="navbar-brand">
+        </a><hr>
+        <ul class="mynav nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-1">
+                <a href="#">
+                    <i class="fa-regular fa-user"></i>
+                    Profile
+                </a>
+            </li>
+
+            <li class="nav-item mb-1">
+                <a href="{{ path('app_recipe_index') }}">
+                    <i class="fa-regular fa-bookmark"></i>
+                    Mes plats
+                    <span class="notification-badge">5</span>
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="{{ path('app_shopping_list_index') }}">
+                    <i class="fa-regular fa-newspaper"></i>
+                    Mes listes de course
+                </a>
+            </li>
+        </ul>
+        <hr>
+        <div class="d-flex">
+
+            <i class="fa-solid fa-book  me-2"></i>
+            <span>
+                    <h6 class="mt-1 mb-0">
+                          Geeks for Geeks Learning Portal
+                      </h6>
+                </span>
+        </div>
+    </div>
+
+    <div class="bg-light flex-fill">
+        <div class="p-2 d-md-none d-flex text-white bg-success">
+            <a href="#" class="text-white"
+               data-bs-toggle="offcanvas"
+               data-bs-target="#bdSidebar">
+                <i class="fa-solid fa-bars"></i>
+            </a>
+            <span class="ms-3">GFG Portal</span>
+        </div>
+        <div class="p-4">
+            {% block breadcrumb %}
+            <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <i class="fa-solid fa-house"></i>
+                    </li>
+                    <li class="breadcrumb-item">Accueil</li>
+                </ol>
+            </nav>
+            {% endblock %}
+
+            <hr>
+            <div class="row">
+                <div class="col">
+                    {% block body %}{% endblock %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

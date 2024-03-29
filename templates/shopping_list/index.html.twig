@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}ShoppingList index{% endblock %}
+
+{% block body %}
+    <h1>Mes listes de course</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for shopping_list in shopping_lists %}
+            <tr>
+                <td>{{ shopping_list.createdAt ? shopping_list.createdAt|date('d/m/Y H:i:s') : '' }}</td>
+                <td>
+                    <a href="{{ path('app_shopping_list_show', {'id': shopping_list.id}) }}">Voir</a>
+                    <a href="{{ path('app_shopping_list_edit', {'id': shopping_list.id}) }}">Modifier</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">Aucune liste de course</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_shopping_list_new') }}">Créer une liste de course</a>
+{% endblock %}

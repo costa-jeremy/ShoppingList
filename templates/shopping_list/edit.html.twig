@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la liste de course du {{ shopping_list.dateList }}{% endblock %}
+
+{% block body %}
+    <h1>Modifier la liste de course du {{ shopping_list.dateList }}{</h1>
+
+    {{ include('shopping_list/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_shopping_list_index') }}">Revenir à la liste des recettes</a>
+
+    {{ include('shopping_list/_delete_form.html.twig') }}
+{% endblock %}
