@@ -1,13 +1,64 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ recipe.name }}{% endblock %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Modification de {{ recipe.name }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_recipe_index') }}" class="text-decoration-none">
+                    Mes recettes
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Modification de {{ recipe.name }}</li>
+        </ol>
+    </nav>
+{% endblock %}
 
 {% block body %}
-    <h1>Modifier {{ recipe.name }}</h1>
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Modification de {{ recipe.name }}
+                        </h1>
+                    </div>
 
-    {{ include('recipe/_form.html.twig', {'button_label': 'Update'}) }}
+                    <div class="card-body">
+                        {{ include('recipe/_form.html.twig', {'button_label': 'Enregistrer', 'button_class': 'btn-success'}) }}
 
-    <a href="{{ path('app_recipe_index') }}">Revenir à la liste des recettes</a>
-
-    {{ include('recipe/_delete_form.html.twig') }}
+                        <div class="mt-4 d-grid gap-2">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <a href="{{ path('app_recipe_index') }}" class="btn btn-secondary btn-lg w-100">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
+                                        <button class="btn btn-danger btn-lg w-100">
+                                            <i class="fas fa-trash-alt me-1"></i>
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

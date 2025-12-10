@@ -1,6 +1,156 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
+    <div class="row g-3">
+        <div class="col-12">
+            {{ form_row(form.name) }}
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-utensils me-2"></i>
+                        Sélectionnez les recettes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for child in form.recipes %}
+                            <div class="col">
+                                <div class="card h-100 {% if child.vars.checked %}border-primary{% else %}border-light{% endif %}">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            {{ form_widget(child, {
+                                                'attr': {
+                                                    'class': 'form-check-input recipe-checkbox'
+                                                }
+                                            }) }}
+                                            {{ form_label(child) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Articles libres
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="custom-items-list" data-prototype="{{ form_widget(form.customItems.vars.prototype)|e('html_attr') }}" data-index="{{ form.customItems|length }}">
+                        {% for customItem in form.customItems %}
+                            <div class="row g-2 mb-2 custom-item-row">
+                                <div class="col-12 col-md-8">
+                                    {{ form_widget(customItem.name) }}
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    {{ form_widget(customItem.quantity) }}
+                                </div>
+                                <div class="col-6 col-md-1">
+                                    <button type="button" class="btn btn-danger btn-sm w-100 remove-custom-item">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm mt-2" id="add-custom-item">
+                        <i class="fas fa-plus me-1"></i>
+                        Ajouter un article
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="d-grid">
+                <button type="submit" class="btn {{ button_class|default('btn-primary') }} btn-lg">
+                    <i class="fas fa-save me-1"></i>
+                    {{ button_label|default('Enregistrer') }}
+                </button>
+            </div>
+        </div>
+    </div>
 {{ form_end(form) }}
+
+<style>
+.recipe-checkbox:checked + label {
+    font-weight: bold;
+    color: var(--bs-primary);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.recipe-checkbox');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.card');
+            if (this.checked) {
+                card.classList.remove('border-light');
+                card.classList.add('border-primary');
+            } else {
+                card.classList.remove('border-primary');
+                card.classList.add('border-light');
+            }
+        });
+    });
+
+    // Gestion des articles libres
+    const customItemsList = document.getElementById('custom-items-list');
+    const addButton = document.getElementById('add-custom-item');
+
+    if (customItemsList && addButton) {
+        let index = parseInt(customItemsList.dataset.index);
+
+        addButton.addEventListener('click', function() {
+            const prototype = customItemsList.dataset.prototype;
+            const newForm = prototype.replace(/__name__/g, index);
+
+            const div = document.createElement('div');
+            div.className = 'row g-2 mb-2 custom-item-row';
+            div.innerHTML = newForm;
+
+            // Restructurer le HTML pour correspondre au format
+            const nameInput = div.querySelector('[id$="_name"]');
+            const quantityInput = div.querySelector('[id$="_quantity"]');
+
+            const newRow = document.createElement('div');
+            newRow.className = 'row g-2 mb-2 custom-item-row';
+            newRow.innerHTML = `
+                <div class="col-12 col-md-8"></div>
+                <div class="col-6 col-md-3"></div>
+                <div class="col-6 col-md-1">
+                    <button type="button" class="btn btn-danger btn-sm w-100 remove-custom-item">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            newRow.querySelector('.col-12.col-md-8').appendChild(nameInput);
+            newRow.querySelector('.col-6.col-md-3').appendChild(quantityInput);
+
+            customItemsList.appendChild(newRow);
+            index++;
+        });
+
+        // Supprimer un article
+        customItemsList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-custom-item') || e.target.closest('.remove-custom-item')) {
+                const row = e.target.closest('.custom-item-row');
+                row.remove();
+            }
+        });
+    }
+});
+</script>

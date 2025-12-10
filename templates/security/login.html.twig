@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block breadcrumb %}
+<nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fa-solid fa-house"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">Connexion</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-5">
+                <h1 class="h3 mb-4 text-center">Connexion</h1>
+
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="inputEmail" class="form-label">Adresse email</label>
+                        <input type="email"
+                               value="{{ last_username }}"
+                               name="_username"
+                               id="inputEmail"
+                               class="form-control"
+                               autocomplete="email"
+                               placeholder="votre@email.com"
+                               required
+                               autofocus>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Mot de passe</label>
+                        <input type="password"
+                               name="_password"
+                               id="inputPassword"
+                               class="form-control"
+                               autocomplete="current-password"
+                               placeholder="Votre mot de passe"
+                               required>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button class="btn btn-success btn-lg" type="submit">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                        </button>
+                    </div>
+                </form>
+
+                <hr>
+
+                <p class="text-center text-muted mb-0">
+                    Vous n'avez pas de compte ?
+                    <a href="{{ path('app_register') }}" class="text-decoration-none">S'inscrire</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

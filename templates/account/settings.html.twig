@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+{% block title %}Paramètres du compte{% endblock %}
+{% block breadcrumb %}
+    <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Paramètres du compte</li>
+        </ol>
+    </nav>
+{% endblock %}
+{% block body %}
+    <div class="container-fluid py-4">
+        <h1 class="h2 mb-4">
+            <i class="fas fa-cog me-2"></i>
+            Paramètres du compte
+        </h1>
+        <div class="row">
+            <!-- Changement d'email -->
+            <div class="col-12 col-lg-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-envelope me-2"></i>
+                            Modifier l'adresse email
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Email actuel : <strong>{{ app.user.email }}</strong>
+                        </p>
+                        {{ form_start(emailForm) }}
+                            <div class="mb-3">
+                                {{ form_row(emailForm.email) }}
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check me-2"></i>
+                                    Modifier l'email
+                                </button>
+                            </div>
+                        {{ form_end(emailForm) }}
+                    </div>
+                </div>
+            </div>
+            <!-- Changement de mot de passe -->
+            <div class="col-12 col-lg-6 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h2 class="h5 mb-0">
+                            <i class="fas fa-lock me-2"></i>
+                            Modifier le mot de passe
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Entrez votre nouveau mot de passe
+                        </p>
+                        {{ form_start(passwordForm) }}
+                            <div class="mb-3">
+                                {{ form_row(passwordForm.plainPassword.first) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form_row(passwordForm.plainPassword.second) }}
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check me-2"></i>
+                                    Modifier le mot de passe
+                                </button>
+                            </div>
+                        {{ form_end(passwordForm) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bouton retour -->
+        <div class="row">
+            <div class="col-12">
+                <a href="{{ path('app_home') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Retour au tableau de bord
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -26,28 +26,29 @@
 </head>
 <body>
 
-<div class="container-fluid p-0 d-flex h-100">
+<div class="container-fluid p-0 d-flex min-vh-100">
+    {% if app.user %}
     <div id="bdSidebar"
          class="d-flex flex-column
                     flex-shrink-0
                     p-3 bg-success
                     text-white offcanvas-md offcanvas-start">
-        <a href="#"
-           class="navbar-brand">
-        </a><hr>
+        <h4 class="mb-3">
+            <i class="fa-solid fa-cart-shopping me-2"></i>
+            Mes listes
+        </h4>
+        <hr>
         <ul class="mynav nav nav-pills flex-column mb-auto">
-            <li class="nav-item mb-1">
-                <a href="#">
-                    <i class="fa-regular fa-user"></i>
-                    Profile
-                </a>
-            </li>
-
             <li class="nav-item mb-1">
                 <a href="{{ path('app_recipe_index') }}">
                     <i class="fa-regular fa-bookmark"></i>
-                    Mes plats
-                    <span class="notification-badge">5</span>
+                    Mes recettes
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="{{ path('app_ingredient_index') }}">
+                    <i class="fa-solid fa-pepper-hot"></i>
+                    Mes ingrédients
                 </a>
             </li>
             <li class="nav-item mb-1">
@@ -58,26 +59,30 @@
             </li>
         </ul>
         <hr>
-        <div class="d-flex">
-
-            <i class="fa-solid fa-book  me-2"></i>
-            <span>
-                    <h6 class="mt-1 mb-0">
-                          Geeks for Geeks Learning Portal
-                      </h6>
-                </span>
+        <div class="d-flex flex-column">
+            <a href="{{ path('app_account_settings') }}" class="text-white text-decoration-none mb-2 hover-opacity">
+                <i class="fa-solid fa-user me-2"></i>
+                <span>{{ app.user.email }}</span>
+            </a>
+            <a href="{{ path('app_logout') }}" class="btn btn-outline-light btn-sm">
+                <i class="fa-solid fa-right-from-bracket me-2"></i>
+                Déconnexion
+            </a>
         </div>
     </div>
+    {% endif %}
 
     <div class="bg-light flex-fill">
+        {% if app.user %}
         <div class="p-2 d-md-none d-flex text-white bg-success">
             <a href="#" class="text-white"
                data-bs-toggle="offcanvas"
                data-bs-target="#bdSidebar">
                 <i class="fa-solid fa-bars"></i>
             </a>
-            <span class="ms-3">GFG Portal</span>
+            <span class="ms-3">Menu</span>
         </div>
+        {% endif %}
         <div class="p-4">
             {% block breadcrumb %}
             <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
@@ -91,6 +96,26 @@
             {% endblock %}
 
             <hr>
+
+            {# Messages flash #}
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                        {% if label == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% elseif label == 'error' or label == 'danger' %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% elseif label == 'warning' %}
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+
             <div class="row">
                 <div class="col">
                     {% block body %}{% endblock %}

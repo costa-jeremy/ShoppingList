@@ -1,0 +1,180 @@
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>{{ shoppingList.name ?? 'Liste de courses' }}</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            color: #002F59;
+            border-bottom: 3px solid #002F59;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #002F59;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        h3 {
+            color: #4EB8C6;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .recipe-block {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .recipe-title {
+            background: #002F59;
+            color: white;
+            padding: 10px 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .comment {
+            background: #f9f9f9;
+            border-left: 3px solid #4EB8C6;
+            padding: 10px 15px;
+            margin: 10px 0;
+            font-style: italic;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table th {
+            background: #002F59;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        .total-section {
+            margin-top: 40px;
+            page-break-before: auto;
+        }
+        .total-table th {
+            background: #4EB8C6;
+        }
+        .total-table tr:last-child td {
+            font-weight: bold;
+            border-bottom: 3px solid #4EB8C6;
+        }
+        .header-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h1>📋 {{ shoppingList.name ?? 'Liste de courses' }}</h1>
+
+    <div class="header-info">
+        <strong>Date de création :</strong> {{ shoppingList.createdAt ? shoppingList.createdAt|date('d/m/Y à H:i') : '' }}<br>
+        <strong>Nombre de recettes :</strong> {{ shoppingList.recipes|length }}
+    </div>
+
+    <h2>🍽️ Recettes sélectionnées</h2>
+
+    {% for recipe in shoppingList.recipes %}
+        <div class="recipe-block">
+            <div class="recipe-title">{{ recipe.name }}</div>
+
+            {% if recipe.comment %}
+                <div class="comment">
+                    💡 {{ recipe.comment }}
+                </div>
+            {% endif %}
+
+            {% if recipe.recipeIngredients|length > 0 %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Ingrédient</th>
+                            <th style="width: 25%; text-align: center;">Quantité</th>
+                            <th style="width: 25%; text-align: center;">Unité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for recipeIngredient in recipe.recipeIngredients %}
+                            <tr>
+                                <td>{{ recipeIngredient.ingredient.name }}</td>
+                                <td style="text-align: center;">{{ recipeIngredient.quantity }}</td>
+                                <td style="text-align: center;">{{ recipeIngredient.ingredient.unit }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="padding: 10px; color: #999;">Aucun ingrédient pour cette recette</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <div class="total-section">
+        <h2>🛒 Liste de courses totale (quantités cumulées)</h2>
+
+        {% set totalIngredients = shoppingList.totalIngredients %}
+        {% if totalIngredients|length > 0 or shoppingList.customItems|length > 0 %}
+            <table class="total-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Ingrédient / Article</th>
+                        <th style="width: 25%; text-align: center;">Quantité totale</th>
+                        <th style="width: 25%; text-align: center;">Unité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in totalIngredients %}
+                        <tr>
+                            <td><strong>{{ item.ingredient.name }}</strong></td>
+                            <td style="text-align: center;"><strong>{{ item.quantity }}</strong></td>
+                            <td style="text-align: center;">{{ item.unit }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% if shoppingList.customItems|length > 0 %}
+                        {% for customItem in shoppingList.customItems %}
+                            <tr style="background: #e6f7f9;">
+                                <td><strong>{{ customItem.name }}</strong> <em style="font-size: 10px; color: #4EB8C6;">(Article libre)</em></td>
+                                <td style="text-align: center;"><strong>{{ customItem.quantity ?? '-' }}</strong></td>
+                                <td style="text-align: center;">-</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="padding: 10px; color: #999;">Aucun ingrédient ni article trouvé</p>
+        {% endif %}
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 12px;">
+        Généré le {{ "now"|date('d/m/Y à H:i') }}
+    </div>
+</div>
+</body>
+</html>

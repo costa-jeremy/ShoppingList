@@ -1,4 +1,13 @@
 {
-    "controllers": [],
+    "controllers": {
+        "@symfony/ux-live-component": {
+            "live": true
+        },
+        "recipe-ingredient-collection": {
+            "enabled": true,
+            "fetch": "eager",
+            "autoimport": true
+        }
+    },
     "entrypoints": []
 }

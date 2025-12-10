@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\RecipeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -17,16 +19,30 @@ class Recipe
     #[ORM\Column(length: 150)]
     private ?string $name = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $comment = null;
+
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $lastTimeDone = null;
 
     #[ORM\Column]
     private ?int $numberOfTimes = 0;
 
+    #[ORM\ManyToMany(targetEntity: ShoppingList::class , mappedBy: 'recipes')]
+    private Collection $shoppingLists;
+
+    #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeIngredient::class, orphanRemoval: true, cascade: ['persist'])]
+    private Collection $recipeIngredients;
+
     #[ORM\ManyToOne(inversedBy: 'recipes')]
-    private ?ShoppingList $shoppingList = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
 
-
+    public function __construct()
+    {
+        $this->shoppingLists = new ArrayCollection();
+        $this->recipeIngredients = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -45,7 +61,17 @@ class Recipe
         return $this;
     }
 
+    public function getComment(): ?string
+    {
+        return $this->comment;
+    }
 
+    public function setComment(?string $comment): static
+    {
+        $this->comment = $comment;
+
+        return $this;
+    }
 
     public function getNumberOfTimes(): ?int
     {
@@ -69,16 +95,71 @@ class Recipe
         $this->lastTimeDone = $lastTimeDone;
     }
 
-    public function getShoppingList(): ?ShoppingList
+    public function markAsDone(): self
     {
-        return $this->shoppingList;
-    }
-
-    public function setShoppingList(?ShoppingList $shoppingList): static
-    {
-        $this->shoppingList = $shoppingList;
+        $this->numberOfTimes++;
+        $this->lastTimeDone = new \DateTime();
 
         return $this;
     }
 
+    public function addShoppingList(ShoppingList $shoppingList): self
+    {
+        if (!$this->shoppingLists->contains($shoppingList)) {
+            $this->shoppingLists[] = $shoppingList;
+            $shoppingList->addRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShoppingList(ShoppingList $shoppingList): self
+    {
+        if ($this->shoppingLists->removeElement($shoppingList)) {
+            $shoppingList->removeRecipe($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RecipeIngredient>
+     */
+    public function getRecipeIngredients(): Collection
+    {
+        return $this->recipeIngredients;
+    }
+
+    public function addRecipeIngredient(RecipeIngredient $recipeIngredient): self
+    {
+        if (!$this->recipeIngredients->contains($recipeIngredient)) {
+            $this->recipeIngredients[] = $recipeIngredient;
+            $recipeIngredient->setRecipe($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRecipeIngredient(RecipeIngredient $recipeIngredient): self
+    {
+        if ($this->recipeIngredients->removeElement($recipeIngredient)) {
+            if ($recipeIngredient->getRecipe() === $this) {
+                $recipeIngredient->setRecipe(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
 }

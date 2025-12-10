@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel ingrédient{% endblock %}
+
+{% block breadcrumb %}
+    <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_ingredient_index') }}" class="text-decoration-none">
+                    Mes ingrédients
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Nouvel ingrédient</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h1 class="h3 mb-0">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Nouvel ingrédient
+                        </h1>
+                    </div>
+
+                    <div class="card-body">
+                        {{ include('ingredient/_form.html.twig', {'button_label': 'Créer', 'button_class': 'btn-success'}) }}
+
+                        <div class="mt-3">
+                            <a href="{{ path('app_ingredient_index') }}" class="btn btn-secondary btn-lg w-100">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Retour
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

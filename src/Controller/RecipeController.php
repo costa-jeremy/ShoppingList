@@ -18,7 +18,7 @@ class RecipeController extends AbstractController
     public function index(RecipeRepository $recipeRepository): Response
     {
         return $this->render('recipe/index.html.twig', [
-            'recipes' => $recipeRepository->findAll(),
+            'recipes' => $recipeRepository->findBy(['user' => $this->getUser()]),
         ]);
     }
 
@@ -26,6 +26,7 @@ class RecipeController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $recipe = new Recipe();
+        $recipe->setUser($this->getUser());
         $form = $this->createForm(RecipeType::class, $recipe);
         $form->handleRequest($request);
 
@@ -36,9 +37,9 @@ class RecipeController extends AbstractController
             return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('recipe/new.html.twig', [
+        return $this->render('recipe/new.html.twig', [
             'recipe' => $recipe,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -62,9 +63,9 @@ class RecipeController extends AbstractController
             return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('recipe/edit.html.twig', [
+        return $this->render('recipe/edit.html.twig', [
             'recipe' => $recipe,
-            'form' => $form,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -77,5 +78,21 @@ class RecipeController extends AbstractController
         }
 
         return $this->redirectToRoute('app_recipe_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/{id}/mark-as-done', name: 'app_recipe_mark_as_done', methods: ['POST'])]
+    public function markAsDone(Request $request, Recipe $recipe, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('mark_done'.$recipe->getId(), $request->request->get('_token'))) {
+            $recipe->markAsDone();
+            $entityManager->flush();
+
+            $this->addFlash('success', sprintf('Bravo ! La recette "%s" a été marquée comme réalisée. C\'est la %de fois !',
+                $recipe->getName(),
+                $recipe->getNumberOfTimes()
+            ));
+        }
+
+        return $this->redirectToRoute('app_recipe_show', ['id' => $recipe->getId()], Response::HTTP_SEE_OTHER);
     }
 }

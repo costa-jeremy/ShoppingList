@@ -1,11 +1,204 @@
-{% form_theme form 'bootstrap_5_layout.html.twig' %}
+{% form_theme form with ['bootstrap_5_layout.html.twig'] %}
 
-{{ form_start(form, {'attr': {'class': 'form'}}) }}
-<div class="form-group">
-    {{ form_label(form.name, 'Nom de la recette', {'label_attr': {'class': 'control-label'}}) }}
-    {{ form_widget(form.name, {'attr': {'class': 'form-control'}}) }}
-</div>
-<!-- Add more form fields as needed -->
+{{ form_start(form) }}
+    <div class="row g-3">
+        <div class="col-12">
+            {{ form_row(form.name) }}
+        </div>
 
-<button type="submit" class="btn btn-primary">{{ button_label|default('Sauvegarder') }}</button>
+        <div class="col-12">
+            {{ form_row(form.comment) }}
+        </div>
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Ingrédients
+                        </h5>
+                        <button type="button"
+                                class="btn btn-primary btn-sm"
+                                data-action="recipe-ingredient-collection#addIngredient">
+                            <i class="fas fa-plus me-1"></i>
+                            Ajouter un ingrédient
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" data-controller="recipe-ingredient-collection">
+                    <div class="recipe-ingredients-list"
+                         data-recipe-ingredient-collection-target="list"
+                         data-prototype="{{ form_widget(form.recipeIngredients.vars.prototype)|e('html_attr') }}">
+                        {% for ingredientForm in form.recipeIngredients %}
+                            <div class="ingredient-row mb-3 p-2 p-sm-3 border rounded">
+                                <div class="row g-2">
+                                    <div class="col-12 col-sm-5">
+                                        {{ form_widget(ingredientForm.ingredient, {
+                                            'attr': {
+                                                'class': 'form-select ingredient-select',
+                                                'placeholder': 'Ingrédient'
+                                            }
+                                        }) }}
+                                    </div>
+                                    <div class="col-8 col-sm-5">
+                                        <div class="input-group">
+                                            {{ form_widget(ingredientForm.quantity, {
+                                                'attr': {
+                                                    'class': 'form-control quantity-input',
+                                                    'placeholder': 'Qté'
+                                                }
+                                            }) }}
+                                            <span class="input-group-text ingredient-unit"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 col-sm-2">
+                                        <button type="button"
+                                                class="btn btn-danger btn-sm w-100 remove-ingredient"
+                                                title="Supprimer">
+                                            <i class="fas fa-trash-alt"></i>
+                                            <span class="d-none d-sm-inline ms-1">Suppr.</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="d-grid">
+                <button type="submit" class="btn {{ button_class|default('btn-primary') }} btn-lg">
+                    <i class="fas fa-save me-1"></i>
+                    {{ button_label|default('Enregistrer') }}
+                </button>
+            </div>
+        </div>
+    </div>
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.recipe-ingredients-list');
+    const addButton = document.querySelector('[data-action="recipe-ingredient-collection#addIngredient"]');
+
+    // Fonction pour mettre à jour l'unité affichée
+    function updateIngredientUnit(selectElement) {
+        const ingredientId = selectElement.value;
+        const unitSpan = selectElement.closest('.ingredient-row').querySelector('.ingredient-unit');
+
+        if (ingredientId && unitSpan) {
+            // Récupérer l'unité via l'API
+            fetch(`/ingredient/${ingredientId}/api`)
+                .then(response => response.json())
+                .then(data => {
+                    unitSpan.textContent = data.unit;
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération de l\'unité:', error);
+                    unitSpan.textContent = '';
+                });
+        } else if (unitSpan) {
+            unitSpan.textContent = '';
+        }
+    }
+
+    // Initialiser les unités pour les ingrédients existants
+    container.querySelectorAll('.ingredient-select').forEach(select => {
+        updateIngredientUnit(select);
+
+        // Ajouter l'écouteur d'événement pour le changement
+        select.addEventListener('change', function() {
+            updateIngredientUnit(this);
+        });
+    });
+
+    function updateIndexes() {
+        container.querySelectorAll('.ingredient-row').forEach((row, idx) => {
+            row.querySelectorAll('select, input').forEach(field => {
+                const fieldName = field.getAttribute('name');
+                if (fieldName) {
+                    // Mettre à jour l'index dans le nom du champ
+                    field.setAttribute('name', fieldName.replace(/\[\d+\]/, `[${idx}]`));
+                }
+            });
+        });
+    }
+
+    addButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        const prototype = container.getAttribute('data-prototype');
+        const newIndex = container.querySelectorAll('.ingredient-row').length;
+        const newForm = prototype.replace(/__ingredient__/g, newIndex);
+
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('ingredient-row', 'mb-3', 'p-2', 'p-sm-3', 'border', 'rounded');
+        wrapper.innerHTML = `
+            <div class="row g-2">
+                <div class="col-12 col-sm-5">
+                    ${extractField(newForm, 'ingredient')}
+                </div>
+                <div class="col-8 col-sm-5">
+                    <div class="input-group">
+                        ${extractField(newForm, 'quantity')}
+                        <span class="input-group-text ingredient-unit"></span>
+                    </div>
+                </div>
+                <div class="col-4 col-sm-2">
+                    <button type="button" class="btn btn-danger btn-sm w-100 remove-ingredient" title="Supprimer">
+                        <i class="fas fa-trash-alt"></i>
+                        <span class="d-none d-sm-inline ms-1">Suppr.</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(wrapper);
+        updateIndexes();
+
+        // Ajouter l'écouteur d'événement pour le select d'ingrédient
+        const newSelect = wrapper.querySelector('.ingredient-select');
+        if (newSelect) {
+            newSelect.addEventListener('change', function() {
+                updateIngredientUnit(this);
+            });
+        }
+
+        // Ajouter l'écouteur d'événement pour le bouton de suppression
+        wrapper.querySelector('.remove-ingredient').addEventListener('click', removeIngredient);
+    });
+
+    function removeIngredient(e) {
+        e.preventDefault();
+        const row = this.closest('.ingredient-row');
+        row.remove();
+        updateIndexes(); // Mettre à jour les index après la suppression
+    }
+
+    // Initialiser les écouteurs d'événements pour les boutons de suppression existants
+    document.querySelectorAll('.remove-ingredient').forEach(button => {
+        button.addEventListener('click', removeIngredient);
+    });
+
+    function extractField(form, fieldName) {
+        const div = document.createElement('div');
+        div.innerHTML = form;
+        const field = div.querySelector(`[name$="[${fieldName}]"]`);
+        if (!field) {
+            console.error(`Champ ${fieldName} non trouvé dans le prototype`);
+            return '';
+        }
+
+        // Ajouter les classes appropriées
+        if (fieldName === 'ingredient') {
+            field.classList.add('form-select', 'ingredient-select');
+        } else if (fieldName === 'quantity') {
+            field.classList.add('form-control', 'quantity-input');
+        }
+
+        return field.outerHTML;
+    }
+});
+</script>

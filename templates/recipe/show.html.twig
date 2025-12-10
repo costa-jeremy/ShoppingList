@@ -1,26 +1,169 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Recette {{ recipe.name }} {% endblock %}
+{% block title %}Recette {{ recipe.name }}{% endblock %}
+
+{% block breadcrumb %}
+    <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_home') }}" class="text-decoration-none">
+                    <i class="fa-solid fa-house"></i>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ path('app_recipe_index') }}" class="text-decoration-none">
+                    Mes recettes
+                </a>
+            </li>
+            <li class="breadcrumb-item active">{{ recipe.name }}</li>
+        </ol>
+    </nav>
+{% endblock %}
 
 {% block body %}
-    <h1>Recette {{ recipe.name }}</h1>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <h1 class="h3 mb-0">
+                                <i class="fas fa-utensils me-2"></i>
+                                {{ recipe.name }}
+                            </h1>
+                            <form method="post" action="{{ path('app_recipe_mark_as_done', {'id': recipe.id}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('mark_done' ~ recipe.id) }}">
+                                <button type="submit" class="btn btn-success btn-sm"
+                                        onclick="return confirm('Confirmez-vous avoir réalisé cette recette ?');">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    J'ai fait cette recette
+                                </button>
+                            </form>
+                        </div>
+                    </div>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Dernière fois</th>
-                <td>{{ recipe.lastTimeDone ? recipe.lastTimeDone|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th>Nombre de fois</th>
-                <td>{{ recipe.numberOfTimes }}</td>
-            </tr>
-        </tbody>
-    </table>
+                    <div class="card-body">
+                        {% if recipe.comment %}
+                            <div class="alert alert-light border mb-4">
+                                <h5 class="mb-2">
+                                    <i class="fas fa-comment me-2"></i>
+                                    Commentaire
+                                </h5>
+                                <p class="mb-0">{{ recipe.comment|nl2br }}</p>
+                            </div>
+                        {% endif %}
 
-    <a href="{{ path('app_recipe_index') }}">Revenir à la liste des recettes</a>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-primary">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Statistiques
+                                        </h5>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span>
+                                                    <i class="fas fa-calendar-alt me-2 text-muted"></i>
+                                                    <strong>Dernière préparation</strong>
+                                                </span>
+                                                <span class="badge bg-info">
+                                                    {{ recipe.lastTimeDone ? recipe.lastTimeDone|date('d/m/Y à H:i') : 'Jamais préparée' }}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    <i class="fas fa-redo me-2 text-muted"></i>
+                                                    <strong>Nombre de préparations</strong>
+                                                </span>
+                                                <span class="badge bg-success fs-5">
+                                                    {{ recipe.numberOfTimes }} fois
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if recipe.numberOfTimes > 0 %}
+                                            <div class="alert alert-success mb-0">
+                                                <i class="fas fa-trophy me-2"></i>
+                                                {% if recipe.numberOfTimes == 1 %}
+                                                    Première réalisation de cette recette !
+                                                {% elseif recipe.numberOfTimes < 5 %}
+                                                    Vous commencez à maîtriser cette recette !
+                                                {% elseif recipe.numberOfTimes < 10 %}
+                                                    Cette recette est devenue un classique !
+                                                {% else %}
+                                                    Vous êtes un expert de cette recette ! 🌟
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}">Modifier</a>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h4 class="mb-3">
+                                    <i class="fas fa-list me-2"></i>
+                                    Ingrédients nécessaires
+                                </h4>
+                                {% if recipe.recipeIngredients|length > 0 %}
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Ingrédient</th>
+                                                    <th>Quantité</th>
+                                                    <th>Unité</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for recipeIngredient in recipe.recipeIngredients %}
+                                                    <tr>
+                                                        <td>{{ recipeIngredient.ingredient.name }}</td>
+                                                        <td>{{ recipeIngredient.quantity }}</td>
+                                                        <td>{{ recipeIngredient.ingredient.unit }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Aucun ingrédient n'a été ajouté à cette recette
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
 
-    {{ include('recipe/_delete_form.html.twig') }}
+                    <div class="card-footer bg-light">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-warning btn-lg">
+                                <i class="fas fa-edit me-1"></i>
+                                Modifier
+                            </a>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <a href="{{ path('app_recipe_index') }}" class="btn btn-secondary btn-lg w-100">
+                                        <i class="fas fa-arrow-left me-1"></i>
+                                        Retour
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
+                                        <button class="btn btn-danger btn-lg w-100">
+                                            <i class="fas fa-trash-alt me-1"></i>
+                                            Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
