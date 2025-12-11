@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Comment ça marche ? - Cuisinotes{% endblock %}
+
+{% block breadcrumb %}
+<nav style="--bs-breadcrumb-divider:'>';font-size:14px">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fa-solid fa-house"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item active">Comment ça marche ?</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="mb-4">Comment utiliser Cuisinotes</h3>
+        <p class="lead">Cuisinotes vous permet de créer et gérer des recettes, ingrédients et listes de courses simplement.</p>
+
+        <h5 class="mt-4"><i class="fa-solid fa-pepper-hot me-2 text-success"></i>Ingrédients</h5>
+        <ul>
+            <li>Commencez par créer vos ingrédients dans la section "Mes ingrédients".</li>
+            <li>Pour chaque ingrédient, indiquez son nom et son unité (kg, L, g, pièce, etc.).</li>
+            <li>Ces ingrédients seront ensuite disponibles pour composer vos recettes.</li>
+        </ul>
+
+        <h5 class="mt-4"><i class="fa-regular fa-bookmark me-2 text-success"></i>Recettes</h5>
+        <ul>
+            <li>Créez des recettes et associez-y les ingrédients précédemment créés.</li>
+            <li>Indiquez la quantité nécessaire pour chaque ingrédient.</li>
+            <li>Ajoutez des commentaires à vos recettes (instructions, astuces, etc.).</li>
+            <li>Suivez combien de fois vous avez réalisé une recette grâce au bouton "J'ai fait cette recette".</li>
+        </ul>
+
+        <h5 class="mt-4"><i class="fa-regular fa-newspaper me-2 text-success"></i>Listes de courses</h5>
+        <ul>
+            <li>Créez une liste de courses et sélectionnez les recettes que vous souhaitez réaliser.</li>
+            <li>Vous pouvez également ajouter des articles libres directement dans la liste (sans créer d'ingrédient).</li>
+            <li>Les quantités d'ingrédients identiques provenant de différentes recettes se cumulent automatiquement.</li>
+            <li>Visualisez le total des ingrédients nécessaires pour toutes vos recettes.</li>
+        </ul>
+
+        <h5 class="mt-4"><i class="fa-solid fa-file-pdf me-2 text-success"></i>Export PDF</h5>
+        <p>Générez un PDF de votre liste de courses avec :</p>
+        <ul>
+            <li>Le détail de chaque recette avec ses ingrédients et commentaires.</li>
+            <li>Un tableau récapitulatif avec le total des ingrédients à acheter.</li>
+        </ul>
+
+        <hr class="my-4">
+        <p class="text-muted mb-0">
+            <i class="fa-solid fa-lightbulb me-2"></i>
+            <strong>Conseil :</strong> Commencez par créer quelques ingrédients de base, puis composez vos premières recettes !
+        </p>
+    </div>
+</div>
+{% endblock %}
+

@@ -34,8 +34,10 @@
                     p-3 bg-success
                     text-white offcanvas-md offcanvas-start">
         <h4 class="mb-3">
-            <i class="fa-solid fa-cart-shopping me-2"></i>
-            Mes listes
+            <a href="{{ path('app_home') }}" class="text-white text-decoration-none">
+                <i class="fa-solid fa-utensils me-2"></i>
+                Cuisinotes
+            </a>
         </h4>
         <hr>
         <ul class="mynav nav nav-pills flex-column mb-auto">
@@ -55,6 +57,12 @@
                 <a href="{{ path('app_shopping_list_index') }}">
                     <i class="fa-regular fa-newspaper"></i>
                     Mes listes de course
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a href="{{ path('app_how_it_works') }}">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Comment ça marche ?
                 </a>
             </li>
         </ul>
@@ -80,7 +88,7 @@
                data-bs-target="#bdSidebar">
                 <i class="fa-solid fa-bars"></i>
             </a>
-            <span class="ms-3">Menu</span>
+            <span class="ms-3">Cuisinotes</span>
         </div>
         {% endif %}
         <div class="p-4">
