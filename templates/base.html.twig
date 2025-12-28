@@ -2,12 +2,15 @@
 <html lang="FR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width,
-                   initial-scale=1.0">
-    {#    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">#}
-    <title>{% block title %}Welcome!{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}CuisiNotes{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#198754">
+    <link rel="apple-touch-icon" href="{{ asset('favicon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CuisiNotes">
     {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
@@ -134,6 +137,25 @@
 
     </div>
 </div>
+
+<script>
+    // Enregistrement du Service Worker pour PWA (uniquement en production)
+    // Désactivé en développement pour éviter les erreurs SSL
+    if ('serviceWorker' in navigator &&
+        location.protocol === 'https:' &&
+        !location.hostname.includes('.dev.') &&
+        !location.hostname.includes('localhost')) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(function(registration) {
+                    console.log('Service Worker enregistré avec succès:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Erreur lors de l\'enregistrement du Service Worker:', error);
+                });
+        });
+    }
+</script>
 
 </body>
 </html>

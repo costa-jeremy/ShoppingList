@@ -28,6 +28,9 @@ class ShoppingList
     #[ORM\OneToMany(mappedBy: 'shoppingList', targetEntity: ShoppingListItem::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
     private Collection $customItems;
 
+    #[ORM\OneToMany(mappedBy: 'shoppingList', targetEntity: ShoppingListIngredientAdjustment::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $ingredientAdjustments;
+
     #[ORM\ManyToOne(inversedBy: 'shoppingLists')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
@@ -36,6 +39,7 @@ class ShoppingList
     {
         $this->recipes = new ArrayCollection();
         $this->customItems = new ArrayCollection();
+        $this->ingredientAdjustments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -91,11 +95,30 @@ class ShoppingList
                     $totalIngredients[$ingredientId] = [
                         'ingredient' => $ingredient,
                         'quantity' => 0,
-                        'unit' => $ingredient->getUnit()
+                        'unit' => $ingredient->getUnit(),
+                        'isHidden' => false,
+                        'adjustedQuantity' => null,
+                        'inCart' => false
                     ];
                 }
 
                 $totalIngredients[$ingredientId]['quantity'] += $recipeIngredient->getQuantity();
+            }
+        }
+
+        // Appliquer les ajustements
+        foreach ($this->ingredientAdjustments as $adjustment) {
+            $ingredientId = $adjustment->getIngredient()->getId();
+            if (isset($totalIngredients[$ingredientId])) {
+                if ($adjustment->isHidden()) {
+                    $totalIngredients[$ingredientId]['isHidden'] = true;
+                }
+                if ($adjustment->getAdjustedQuantity() !== null) {
+                    $totalIngredients[$ingredientId]['adjustedQuantity'] = $adjustment->getAdjustedQuantity();
+                }
+                if ($adjustment->isInCart()) {
+                    $totalIngredients[$ingredientId]['inCart'] = true;
+                }
             }
         }
 
@@ -138,6 +161,35 @@ class ShoppingList
             // set the owning side to null (unless already changed)
             if ($customItem->getShoppingList() === $this) {
                 $customItem->setShoppingList(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ShoppingListIngredientAdjustment>
+     */
+    public function getIngredientAdjustments(): Collection
+    {
+        return $this->ingredientAdjustments;
+    }
+
+    public function addIngredientAdjustment(ShoppingListIngredientAdjustment $adjustment): static
+    {
+        if (!$this->ingredientAdjustments->contains($adjustment)) {
+            $this->ingredientAdjustments->add($adjustment);
+            $adjustment->setShoppingList($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIngredientAdjustment(ShoppingListIngredientAdjustment $adjustment): static
+    {
+        if ($this->ingredientAdjustments->removeElement($adjustment)) {
+            if ($adjustment->getShoppingList() === $this) {
+                $adjustment->setShoppingList(null);
             }
         }
 

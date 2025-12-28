@@ -150,11 +150,13 @@
                 </thead>
                 <tbody>
                     {% for item in totalIngredients %}
+                        {% if not item.isHidden %}
                         <tr>
                             <td><strong>{{ item.ingredient.name }}</strong></td>
-                            <td style="text-align: center;"><strong>{{ item.quantity }}</strong></td>
+                            <td style="text-align: center;"><strong>{{ item.adjustedQuantity ?? item.quantity }}</strong></td>
                             <td style="text-align: center;">{{ item.unit }}</td>
                         </tr>
+                        {% endif %}
                     {% endfor %}
                     {% if shoppingList.customItems|length > 0 %}
                         {% for customItem in shoppingList.customItems %}

@@ -139,21 +139,21 @@
 
                     <div class="card-footer bg-light">
                         <div class="d-grid gap-2">
-                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-warning btn-lg">
+                            <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}" class="btn btn-warning">
                                 <i class="fas fa-edit me-1"></i>
                                 Modifier
                             </a>
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <a href="{{ path('app_recipe_index') }}" class="btn btn-secondary btn-lg w-100">
+                                    <a href="{{ path('app_recipe_index') }}" class="btn btn-secondary w-100">
                                         <i class="fas fa-arrow-left me-1"></i>
                                         Retour
                                     </a>
                                 </div>
                                 <div class="col-6">
-                                    <form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                                    <form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');" class="m-0">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
-                                        <button class="btn btn-danger btn-lg w-100">
+                                        <button class="btn btn-danger w-100">
                                             <i class="fas fa-trash-alt me-1"></i>
                                             Supprimer
                                         </button>

@@ -19,6 +19,9 @@ class ShoppingListItem
     #[ORM\Column(nullable: true)]
     private ?float $quantity = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isInCart = false;
+
 
     #[ORM\ManyToOne(inversedBy: 'customItems')]
     #[ORM\JoinColumn(nullable: false)]
@@ -53,6 +56,17 @@ class ShoppingListItem
         return $this;
     }
 
+    public function isInCart(): bool
+    {
+        return $this->isInCart;
+    }
+
+    public function setIsInCart(bool $isInCart): static
+    {
+        $this->isInCart = $isInCart;
+
+        return $this;
+    }
 
     public function getShoppingList(): ?ShoppingList
     {
@@ -66,4 +80,3 @@ class ShoppingListItem
         return $this;
     }
 }
-

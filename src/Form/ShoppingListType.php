@@ -60,7 +60,7 @@ class ShoppingListType extends AbstractType
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,
-                'label' => 'Articles libres',
+                'label' => false,
                 'attr' => [
                     'class' => 'custom-items-collection'
                 ]
