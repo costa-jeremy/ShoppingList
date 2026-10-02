@@ -14,7 +14,7 @@ class ShoppingListIngredientAdjustment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: ShoppingList::class)]
+    #[ORM\ManyToOne(targetEntity: ShoppingList::class, inversedBy: 'ingredientAdjustments')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?ShoppingList $shoppingList = null;
 
