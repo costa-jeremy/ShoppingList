@@ -17,17 +17,40 @@
 
 {% block body %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mb-md-4">
             <h1 class="h2 mb-0">
                 <i class="fas fa-utensils me-2"></i>
                 Mes recettes
             </h1>
             <a href="{{ path('app_recipe_new') }}" class="btn btn-primary">
                 <i class="fas fa-plus-circle me-2"></i>
-                <span class="d-none d-sm-inline">Nouvelle recette</span>
-                <span class="d-sm-none">Nouvelle <br> recette</span>
+                Nouvelle recette
             </a>
         </div>
+
+        <form method="get" action="{{ path('app_recipe_index') }}" class="row g-2 mb-3" role="search">
+            <div class="col-12 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="search" name="q" value="{{ search }}" class="form-control"
+                           placeholder="Rechercher une recette..." aria-label="Rechercher une recette">
+                </div>
+            </div>
+            <div class="col-8 col-md-3">
+                <select name="order" class="form-select" aria-label="Trier les recettes" onchange="this.form.submit()">
+                    <option value="newest" {% if order == 'newest' %}selected{% endif %}>Plus récentes d'abord</option>
+                    <option value="oldest" {% if order == 'oldest' %}selected{% endif %}>Plus anciennes d'abord</option>
+                </select>
+            </div>
+            <div class="col-4 col-md-auto d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+                {% if search %}
+                    <a href="{{ path('app_recipe_index', {'order': order}) }}" class="btn btn-outline-secondary" title="Effacer la recherche">
+                        <i class="fas fa-times"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
 
         <div class="card shadow-sm">
             <div class="table-responsive">
@@ -121,6 +144,9 @@
                         <tr>
                             <td colspan="4" class="text-center py-4 text-muted">
                                 <i class="fas fa-book fa-2x mb-3 d-block"></i>
+                                {% if search %}
+                                    Aucune recette ne correspond à « {{ search }} »
+                                {% else %}
                                 Aucune recette
                                 <div class="mt-2">
                                     <a href="{{ path('app_recipe_new') }}" class="btn btn-sm btn-primary">
@@ -128,6 +154,7 @@
                                         Ajouter ma première recette
                                     </a>
                                 </div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

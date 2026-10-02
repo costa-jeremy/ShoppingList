@@ -4,6 +4,7 @@
     <div class="row g-3">
         <div class="col-12">
             {{ form_row(form.name) }}
+            <div id="duplicate-warning" class="alert alert-warning py-2 mt-2 d-none" role="status"></div>
         </div>
         <div class="col-12">
             {{ form_row(form.unit) }}
@@ -18,3 +19,39 @@
         </div>
     </div>
 {{ form_end(form) }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const nameInput = document.getElementById('{{ form.name.vars.id }}');
+        const warning = document.getElementById('duplicate-warning');
+        const checkUrl = '{{ path('app_ingredient_check_duplicate') }}';
+        const excludeId = '{{ form.vars.value.id ?? '' }}';
+        let debounceTimer;
+
+        nameInput.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            const name = this.value.trim();
+            if (name === '') {
+                warning.classList.add('d-none');
+                return;
+            }
+
+            // Vérification côté serveur 300ms après la dernière saisie
+            debounceTimer = setTimeout(() => {
+                const params = new URLSearchParams({ name: name, exclude: excludeId });
+                fetch(`${checkUrl}?${params}`)
+                    .then(response => response.json())
+                    .then(duplicates => {
+                        if (duplicates.length === 0) {
+                            warning.classList.add('d-none');
+                            return;
+                        }
+                        const names = duplicates.map(d => `« ${d.name} » (${d.unit})`).join(', ');
+                        warning.textContent = `⚠️ Un ingrédient similaire existe déjà : ${names}.`;
+                        warning.classList.remove('d-none');
+                    })
+                    .catch(err => console.error('Erreur vérification doublon:', err));
+            }, 300);
+        });
+    });
+</script>

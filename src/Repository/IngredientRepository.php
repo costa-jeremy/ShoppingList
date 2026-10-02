@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Ingredient;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,58 @@ class IngredientRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Ingredient::class);
+    }
+
+    /**
+     * @return Ingredient[]
+     */
+    public function findByUserAndName(User $user, ?string $search): array
+    {
+        $qb = $this->createQueryBuilder('i')
+            ->andWhere('i.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('i.name', 'ASC');
+
+        if ($search) {
+            $qb->andWhere('LOWER(i.name) LIKE :search')
+                ->setParameter('search', '%' . mb_strtolower(addcslashes($search, '%_')) . '%');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Ingrédients de l'utilisateur dont le nom normalisé est identique à $name.
+     *
+     * @return Ingredient[]
+     */
+    public function findDuplicates(User $user, ?string $name, ?int $excludeId = null): array
+    {
+        $normalized = Ingredient::normalizeName($name);
+        if ($normalized === '') {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $this->findBy(['user' => $user]),
+            static fn (Ingredient $ingredient) => $ingredient->getId() !== $excludeId
+                && Ingredient::normalizeName($ingredient->getName()) === $normalized
+        ));
+    }
+
+    /**
+     * Ids des ingrédients de l'utilisateur qui ont au moins un doublon.
+     *
+     * @return int[]
+     */
+    public function findDuplicateIds(User $user): array
+    {
+        $groups = [];
+        foreach ($this->findBy(['user' => $user]) as $ingredient) {
+            $groups[Ingredient::normalizeName($ingredient->getName())][] = $ingredient->getId();
+        }
+
+        return array_merge([], ...array_values(array_filter($groups, static fn (array $ids) => count($ids) > 1)));
     }
 
     public function save(Ingredient $entity, bool $flush = false): void

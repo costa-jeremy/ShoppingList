@@ -17,7 +17,7 @@
 
 {% block body %}
     <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mb-md-4">
             <h1 class="h2 mb-0">
                 <i class="fas fa-pepper-hot me-2"></i>
                 Mes ingrédients
@@ -27,6 +27,32 @@
                 Nouvel ingrédient
             </a>
         </div>
+
+        <form method="get" action="{{ path('app_ingredient_index') }}" class="row g-2 mb-3" role="search">
+            <div class="col-12 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="search" name="q" value="{{ search }}" class="form-control"
+                           placeholder="Rechercher un ingrédient..." aria-label="Rechercher un ingrédient">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </div>
+            {% if search %}
+                <div class="col-auto">
+                    <a href="{{ path('app_ingredient_index') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>
+                        Effacer
+                    </a>
+                </div>
+            {% endif %}
+        </form>
+
+        {% if duplicate_ids is not empty %}
+            <div class="alert alert-warning">
+                <i class="fas fa-clone me-2"></i>
+                Certains ingrédients semblent en double (badge « Doublon »). Vous pouvez les fusionner en les modifiant ou en supprimant l'un d'eux.
+            </div>
+        {% endif %}
 
         <div class="card shadow-sm">
             <div class="table-responsive">
@@ -41,21 +67,26 @@
                                 <i class="fas fa-balance-scale me-2"></i>
                                 Unité
                             </th>
-                            <th class="border-0 text-end" style="width: 200px">Actions</th>
+                            <th class="border-0 text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% for ingredient in ingredients %}
                         <tr>
-                            <td class="align-middle">{{ ingredient.name }}</td>
+                            <td class="align-middle">
+                                {{ ingredient.name }}
+                                {% if ingredient.id in duplicate_ids %}
+                                    <span class="badge bg-warning text-dark ms-1" title="Un ingrédient au nom similaire existe">Doublon</span>
+                                {% endif %}
+                            </td>
                             <td class="align-middle">{{ ingredient.unit }}</td>
                             <td>
                                 <div class="d-flex gap-2 justify-content-end">
                                     <a href="{{ path('app_ingredient_edit', {'id': ingredient.id}) }}"
                                        class="btn btn-sm btn-warning"
                                        title="Modifier l'ingrédient">
-                                        <i class="fas fa-edit me-1"></i>
-                                        Modifier
+                                        <i class="fas fa-edit"></i>
+                                        <span class="d-none d-md-inline ms-1">Modifier</span>
                                     </a>
                                     <form method="post"
                                           action="{{ path('app_ingredient_delete', {'id': ingredient.id}) }}"
@@ -63,8 +94,8 @@
                                           class="d-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ ingredient.id) }}">
                                         <button type="submit" class="btn btn-sm btn-danger" title="Supprimer l'ingrédient">
-                                            <i class="fas fa-trash-alt me-1"></i>
-                                            Supprimer
+                                            <i class="fas fa-trash-alt"></i>
+                                            <span class="d-none d-md-inline ms-1">Supprimer</span>
                                         </button>
                                     </form>
                                 </div>
@@ -74,6 +105,9 @@
                         <tr>
                             <td colspan="3" class="text-center py-4 text-muted">
                                 <i class="fas fa-pepper-hot fa-2x mb-3 d-block"></i>
+                                {% if search %}
+                                    Aucun ingrédient ne correspond à « {{ search }} »
+                                {% else %}
                                 Aucun ingrédient
                                 <div class="mt-2">
                                     <a href="{{ path('app_ingredient_new') }}" class="btn btn-sm btn-primary">
@@ -81,6 +115,7 @@
                                         Ajouter mon premier ingrédient
                                     </a>
                                 </div>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}

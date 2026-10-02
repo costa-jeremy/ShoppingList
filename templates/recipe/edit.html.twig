@@ -38,14 +38,14 @@
                         {{ include('recipe/_form.html.twig', {'button_label': 'Enregistrer', 'button_class': 'btn-success'}) }}
 
                         <div class="mt-4 d-grid gap-2">
-                            <div class="row g-2">
-                                <div class="col-6">
+                            <div class="d-grid gap-2 grid-2-cols">
+                                <div>
                                     <a href="{{ path('app_recipe_index') }}" class="btn btn-secondary w-100">
                                         <i class="fas fa-arrow-left me-1"></i>
                                         Retour
                                     </a>
                                 </div>
-                                <div class="col-6">
+                                <div>
                                     <form method="post" action="{{ path('app_recipe_delete', {'id': recipe.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');" class="m-0">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
                                         <button class="btn btn-danger w-100">

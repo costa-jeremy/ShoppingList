@@ -6,13 +6,14 @@ namespace App\Twig\Extensions\Recipe;
 
 
 use App\Repository\RecipeRepository;
+use Symfony\Component\Security\Core\Security;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 final class RecipeExtension extends AbstractExtension
 {
 
-    public function __construct(private RecipeRepository $recipeRepository)
+    public function __construct(private RecipeRepository $recipeRepository, private Security $security)
     {
     }
 
@@ -23,11 +24,13 @@ final class RecipeExtension extends AbstractExtension
         ];
     }
 
-    public function getNumberOfRecipe(): ?int
+    public function getNumberOfRecipe(): int
     {
-        if($this->recipeRepository->count([])){
-            return $this->recipeRepository->count([]);
+        $user = $this->security->getUser();
+        if (!$user) {
+            return 0;
         }
-        return 0;
+
+        return $this->recipeRepository->count(['user' => $user]);
     }
 }

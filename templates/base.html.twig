@@ -2,7 +2,7 @@
 <html lang="FR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CuisiNotes{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
@@ -30,41 +30,47 @@
 </head>
 <body>
 
+{% set current_route = app.request.attributes.get('_route') ?? '' %}
 <div class="container-fluid p-0 d-flex min-vh-100">
     {% if app.user %}
     <div id="bdSidebar"
          class="d-flex flex-column
                     flex-shrink-0
                     p-3 bg-success
-                    text-white offcanvas-md offcanvas-start">
-        <h4 class="mb-3">
-            <a href="{{ path('app_home') }}" class="text-white text-decoration-none">
-                <i class="fa-solid fa-utensils me-2"></i>
-                Cuisinotes
-            </a>
-        </h4>
+                    text-white offcanvas-md offcanvas-start"
+         tabindex="-1" aria-label="Menu principal">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">
+                <a href="{{ path('app_home') }}" class="text-white text-decoration-none">
+                    <i class="fa-solid fa-utensils me-2"></i>
+                    Cuisinotes
+                </a>
+            </h4>
+            <button type="button" class="btn-close btn-close-white d-md-none"
+                    data-bs-dismiss="offcanvas" data-bs-target="#bdSidebar" aria-label="Fermer le menu"></button>
+        </div>
         <hr>
         <ul class="mynav nav nav-pills flex-column mb-auto">
             <li class="nav-item mb-1">
-                <a href="{{ path('app_recipe_index') }}">
+                <a href="{{ path('app_recipe_index') }}" class="{{ current_route starts with 'app_recipe' ? 'active' }}">
                     <i class="fa-regular fa-bookmark"></i>
                     Mes recettes
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a href="{{ path('app_ingredient_index') }}">
+                <a href="{{ path('app_ingredient_index') }}" class="{{ current_route starts with 'app_ingredient' ? 'active' }}">
                     <i class="fa-solid fa-pepper-hot"></i>
                     Mes ingrédients
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a href="{{ path('app_shopping_list_index') }}">
+                <a href="{{ path('app_shopping_list_index') }}" class="{{ current_route starts with 'app_shopping_list' ? 'active' }}">
                     <i class="fa-regular fa-newspaper"></i>
                     Mes listes de course
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a href="{{ path('app_how_it_works') }}">
+                <a href="{{ path('app_how_it_works') }}" class="{{ current_route starts with 'app_how_it_works' ? 'active' }}">
                     <i class="fa-solid fa-circle-info"></i>
                     Comment ça marche ?
                 </a>
@@ -84,18 +90,23 @@
     </div>
     {% endif %}
 
-    <div class="bg-light flex-fill">
+    <div class="bg-light flex-fill main-column">
         {% if app.user %}
-        <div class="p-2 d-md-none d-flex text-white bg-success">
-            <a href="#" class="text-white"
-               data-bs-toggle="offcanvas"
-               data-bs-target="#bdSidebar">
+        <div class="mobile-topbar d-md-none d-flex align-items-center text-white bg-success">
+            <button type="button" class="menu-toggle btn text-white"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#bdSidebar"
+                    aria-controls="bdSidebar"
+                    aria-label="Ouvrir le menu">
                 <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="mobile-topbar-title text-truncate">{{ block('title') }}</span>
+            <a href="{{ path('app_home') }}" class="menu-toggle btn text-white ms-auto" aria-label="Tableau de bord">
+                <i class="fa-solid fa-house"></i>
             </a>
-            <span class="ms-3">Cuisinotes</span>
         </div>
         {% endif %}
-        <div class="p-4">
+        <div class="main-content p-md-4">
             {% block breadcrumb %}
             <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
                 <ol class="breadcrumb">
@@ -128,11 +139,7 @@
                 {% endfor %}
             {% endfor %}
 
-            <div class="row">
-                <div class="col">
-                    {% block body %}{% endblock %}
-                </div>
-            </div>
+            {% block body %}{% endblock %}
         </div>
 
     </div>

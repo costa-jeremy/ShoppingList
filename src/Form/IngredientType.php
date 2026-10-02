@@ -11,6 +11,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class IngredientType extends AbstractType
 {
+    public const UNITS = [
+        'Grammes' => 'g',
+        'Millilitres' => 'ml',
+        'Pièces' => 'pcs',
+        'Cuillères à soupe' => 'càs',
+        'Cuillères à café' => 'càc',
+        'Kilogrammes' => 'kg',
+        'Litres' => 'L',
+    ];
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -22,15 +32,7 @@ class IngredientType extends AbstractType
             ])
             ->add('unit', ChoiceType::class, [
                 'label' => 'Unité de mesure',
-                'choices' => [
-                    'Grammes' => 'g',
-                    'Millilitres' => 'ml',
-                    'Pièces' => 'pcs',
-                    'Cuillères à soupe' => 'càs',
-                    'Cuillères à café' => 'càc',
-                    'Kilogrammes' => 'kg',
-                    'Litres' => 'L'
-                ],
+                'choices' => self::UNITS,
                 'placeholder' => 'Choisir une unité'
             ])
         ;

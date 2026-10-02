@@ -6,6 +6,7 @@ use App\Repository\IngredientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use function Symfony\Component\String\u;
 
 #[ORM\Entity(repositoryClass: IngredientRepository::class)]
 class Ingredient
@@ -31,6 +32,20 @@ class Ingredient
     public function __construct()
     {
         $this->recipeIngredients = new ArrayCollection();
+    }
+
+    /**
+     * Forme comparable d'un nom pour détecter les doublons :
+     * sans accents, en minuscules, espaces réduits, pluriel simple (s/x final) retiré.
+     */
+    public static function normalizeName(?string $name): string
+    {
+        $normalized = u((string) $name)->ascii()->lower()->collapseWhitespace()->trim()->toString();
+
+        return implode(' ', array_map(
+            static fn (string $word) => strlen($word) > 3 ? preg_replace('/[sx]$/', '', $word) : $word,
+            explode(' ', $normalized)
+        ));
     }
 
     public function getId(): ?int

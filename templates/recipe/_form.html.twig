@@ -18,12 +18,21 @@
                             <i class="fas fa-list me-2"></i>
                             Ingrédients
                         </h5>
-                        <button type="button"
-                                class="btn btn-primary btn-sm"
-                                data-action="recipe-ingredient-collection#addIngredient">
-                            <i class="fas fa-plus me-1"></i>
-                            Ajouter un ingrédient
-                        </button>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button"
+                                    class="btn btn-primary btn-sm"
+                                    data-action="recipe-ingredient-collection#addIngredient">
+                                <i class="fas fa-plus me-1"></i>
+                                Ajouter un ingrédient
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-success btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#quick-ingredient-modal">
+                                <i class="fas fa-pepper-hot me-1"></i>
+                                Créer un nouvel ingrédient
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body" data-controller="recipe-ingredient-collection">
@@ -79,6 +88,46 @@
     </div>
 {{ form_end(form) }}
 
+{# Modale de création rapide d'ingrédient : hors du formulaire de recette (pas de formulaires imbriqués) #}
+<div class="modal fade" id="quick-ingredient-modal" tabindex="-1" aria-labelledby="quick-ingredient-title" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="quick-ingredient-form" novalidate>
+            <div class="modal-header">
+                <h5 class="modal-title" id="quick-ingredient-title">
+                    <i class="fas fa-pepper-hot me-2"></i>
+                    Nouvel ingrédient
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quick-ingredient-error" class="alert alert-warning d-none" role="alert"></div>
+                <div class="mb-3">
+                    <label for="quick-ingredient-name" class="form-label">Nom de l'ingrédient</label>
+                    <input type="text" id="quick-ingredient-name" class="form-control" maxlength="255" required
+                           placeholder="Ex: Farine, Sucre, Lait...">
+                </div>
+                <div class="mb-0">
+                    <label for="quick-ingredient-unit" class="form-label">Unité de mesure</label>
+                    <select id="quick-ingredient-unit" class="form-select" required>
+                        <option value="">Choisir une unité</option>
+                        {% for label, unit in constant('App\\Form\\IngredientType::UNITS') %}
+                            <option value="{{ unit }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <small class="text-muted d-block mt-2">L'ingrédient sera aussi ajouté à « Mes ingrédients ».</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="submit" class="btn btn-success" id="quick-ingredient-submit">
+                    <i class="fas fa-plus-circle me-1"></i>
+                    Créer et ajouter à la recette
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('.recipe-ingredients-list');
@@ -129,6 +178,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addButton.addEventListener('click', function(e) {
         e.preventDefault();
+        addRow();
+    });
+
+    // Ajoute une ligne d'ingrédient vide et la renvoie
+    function addRow() {
         const prototype = container.getAttribute('data-prototype');
         const newIndex = container.querySelectorAll('.ingredient-row').length;
         const newForm = prototype.replace(/__ingredient__/g, newIndex);
@@ -168,7 +222,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Ajouter l'écouteur d'événement pour le bouton de suppression
         wrapper.querySelector('.remove-ingredient').addEventListener('click', removeIngredient);
-    });
+
+        return wrapper;
+    }
 
     function removeIngredient(e) {
         e.preventDefault();
@@ -180,6 +236,111 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialiser les écouteurs d'événements pour les boutons de suppression existants
     document.querySelectorAll('.remove-ingredient').forEach(button => {
         button.addEventListener('click', removeIngredient);
+    });
+
+    // ----- Création rapide d'un ingrédient depuis la recette -----
+    const quickModal = document.getElementById('quick-ingredient-modal');
+    const quickForm = document.getElementById('quick-ingredient-form');
+    const quickName = document.getElementById('quick-ingredient-name');
+    const quickUnit = document.getElementById('quick-ingredient-unit');
+    const quickError = document.getElementById('quick-ingredient-error');
+    const quickSubmit = document.getElementById('quick-ingredient-submit');
+    const quickCreateUrl = '{{ path('app_ingredient_quick_create') }}';
+    const quickCreateToken = '{{ csrf_token('quick_create_ingredient') }}';
+
+    // Insère l'option dans un select en respectant l'ordre alphabétique
+    function addOptionToSelect(select, ingredient) {
+        if (select.querySelector(`option[value="${ingredient.id}"]`)) {
+            return;
+        }
+        const option = document.createElement('option');
+        option.value = ingredient.id;
+        option.textContent = ingredient.name;
+        const next = Array.from(select.options).find(o => o.value !== '' && o.textContent.localeCompare(ingredient.name, 'fr', { sensitivity: 'base' }) > 0);
+        select.insertBefore(option, next || null);
+    }
+
+    // Rend l'ingrédient disponible dans toutes les lignes, y compris celles ajoutées plus tard
+    function addOptionEverywhere(ingredient) {
+        container.querySelectorAll('.ingredient-select').forEach(select => addOptionToSelect(select, ingredient));
+
+        const prototypeHolder = document.createElement('div');
+        prototypeHolder.innerHTML = container.getAttribute('data-prototype');
+        const prototypeSelect = prototypeHolder.querySelector('select');
+        if (prototypeSelect) {
+            addOptionToSelect(prototypeSelect, ingredient);
+            container.setAttribute('data-prototype', prototypeHolder.innerHTML);
+        }
+    }
+
+    // Sélectionne l'ingrédient dans une ligne vide (ou une nouvelle ligne)
+    function useIngredientInRecipe(ingredient) {
+        addOptionEverywhere(ingredient);
+
+        const emptySelect = Array.from(container.querySelectorAll('.ingredient-select')).find(s => s.value === '');
+        const row = emptySelect ? emptySelect.closest('.ingredient-row') : addRow();
+        const select = row.querySelector('.ingredient-select');
+        select.value = ingredient.id;
+        updateIngredientUnit(select);
+
+        quickModal.querySelector('[data-bs-dismiss="modal"]').click();
+        const quantityInput = row.querySelector('.quantity-input');
+        if (quantityInput) {
+            quantityInput.focus();
+        }
+    }
+
+    function showQuickError(message, existing) {
+        quickError.textContent = message;
+        if (existing) {
+            const useButton = document.createElement('button');
+            useButton.type = 'button';
+            useButton.className = 'btn btn-sm btn-warning ms-2';
+            useButton.textContent = `Utiliser « ${existing.name} »`;
+            useButton.addEventListener('click', () => useIngredientInRecipe(existing));
+            quickError.appendChild(useButton);
+        }
+        quickError.classList.remove('d-none');
+    }
+
+    quickModal.addEventListener('shown.bs.modal', () => quickName.focus());
+    quickModal.addEventListener('hidden.bs.modal', () => {
+        quickForm.reset();
+        quickError.classList.add('d-none');
+        quickError.textContent = '';
+    });
+
+    quickForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        quickError.classList.add('d-none');
+
+        if (quickName.value.trim() === '' || quickUnit.value === '') {
+            showQuickError('Veuillez saisir un nom et choisir une unité.');
+            return;
+        }
+
+        quickSubmit.disabled = true;
+        fetch(quickCreateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': quickCreateToken,
+            },
+            body: JSON.stringify({ name: quickName.value, unit: quickUnit.value })
+        })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok) {
+                    useIngredientInRecipe(data);
+                } else {
+                    showQuickError(data.error || 'Erreur lors de la création de l\'ingrédient.', data.existing);
+                }
+            })
+            .catch(err => {
+                console.error('Erreur réseau:', err);
+                showQuickError('Erreur réseau, veuillez réessayer.');
+            })
+            .finally(() => { quickSubmit.disabled = false; });
     });
 
     function extractField(form, fieldName) {

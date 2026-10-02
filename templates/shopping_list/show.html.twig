@@ -26,8 +26,8 @@
             <div class="col-12">
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center gap-2">
-                            <h1 class="h3 mb-0">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <h1 class="h3 mb-0 text-break">
                                 <i class="fas fa-clipboard-list me-2"></i>
                                 {{ shopping_list.name ?? 'Liste de courses' }}
                             </h1>
@@ -40,30 +40,109 @@
                     </div>
 
                     <div class="card-body">
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Créée le {{ shopping_list.createdAt ? shopping_list.createdAt|date('d/m/Y à H:i') : '' }}
+                        </p>
+
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="table-responsive">
-                                    <table class="table table-striped mb-0">
-                                        <tbody>
-                                            {% if shopping_list.name %}
-                                            <tr>
-                                                <th class="bg-light" style="width: 200px;">
-                                                    <i class="fas fa-tag me-2"></i>
-                                                    Nom de la liste
-                                                </th>
-                                                <td>{{ shopping_list.name }}</td>
-                                            </tr>
-                                            {% endif %}
-                                            <tr>
-                                                <th class="bg-light" style="width: 200px;">
-                                                    <i class="fas fa-calendar-alt me-2"></i>
-                                                    Date de création
-                                                </th>
-                                                <td>{{ shopping_list.createdAt ? shopping_list.createdAt|date('d/m/Y à H:i') : '' }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div class="col-12">
+                                <h4 class="mb-3">
+                                    <i class="fas fa-shopping-basket me-2"></i>
+                                    Liste de courses complète
+                                </h4>
+                                {% set totalIngredients = shopping_list.totalIngredients %}
+                                {% set removedCount = totalIngredients|filter(item => item.isHidden)|length %}
+                                {% if totalIngredients|length > 0 or shopping_list.customItems|length > 0 %}
+                                    <div id="removed-toggle-wrapper" class="mb-2 {% if removedCount == 0 %}d-none{% endif %}">
+                                        <button type="button" id="toggle-removed-btn" class="btn btn-sm btn-outline-secondary" aria-pressed="false">
+                                            <i class="fas fa-eye me-1"></i>
+                                            <span class="toggle-removed-label">Afficher les ingrédients retirés</span>
+                                            (<span id="removed-count">{{ removedCount }}</span>)
+                                        </button>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover table-striped">
+                                            <thead class="table-primary">
+                                                <tr>
+                                                    <th style="width: 50px;">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </th>
+                                                    <th style="width: 60px;"><span class="visually-hidden">Retirer</span></th>
+                                                    <th>Ingrédient / Article</th>
+                                                    <th style="width: 110px;">Quantité</th>
+                                                    <th>Unité</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in totalIngredients %}
+                                                    <tr class="ingredient-row {% if item.isHidden %}table-dark text-white text-decoration-line-through d-none{% endif %}" data-ingredient-id="{{ item.ingredient.id }}" data-removed="{{ item.isHidden ? 'true' : 'false' }}">
+                                                        <td>
+                                                            <input type="checkbox"
+                                                                   class="form-check-input cart-checkbox"
+                                                                   id="cart-ingredient-{{ item.ingredient.id }}"
+                                                                   data-ingredient-id="{{ item.ingredient.id }}"
+                                                                   aria-label="Mettre {{ item.ingredient.name }} dans le caddie"
+                                                                   {% if item.isHidden %}disabled{% endif %}
+                                                                  {% if item.inCart %}checked{% endif %}>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button"
+                                                                    class="btn btn-sm toggle-ingredient-btn {% if item.isHidden %}btn-success{% else %}btn-danger{% endif %}"
+                                                                    data-ingredient-id="{{ item.ingredient.id }}"
+                                                                    data-hidden="{{ item.isHidden ? 'true' : 'false' }}"
+                                                                    title="{{ item.isHidden ? 'Remettre dans la liste' : 'Retirer de la liste' }}">
+                                                                <i class="fas {% if item.isHidden %}fa-undo{% else %}fa-trash-alt{% endif %}"></i>
+                                                            </button>
+                                                        </td>
+                                                        <td>
+                                                            <label for="cart-ingredient-{{ item.ingredient.id }}" class="d-block">
+                                                                <strong class="ingredient-name {% if item.isHidden %}text-white{% endif %}">
+                                                                    {{ item.ingredient.name }}
+                                                                </strong>
+                                                            </label>
+                                                        </td>
+                                                        <td>
+                                                            <input type="number"
+                                                                   class="form-control form-control-sm quantity-input"
+                                                                   step="0.01"
+                                                                   value="{{ item.adjustedQuantity ?? item.quantity }}"
+                                                                   data-ingredient-id="{{ item.ingredient.id }}"
+                                                                   data-original-quantity="{{ item.quantity }}"
+                                                                   aria-label="Quantité totale pour {{ item.ingredient.name }}"
+                                                                   {% if item.isHidden %}disabled{% endif %}>
+                                                        </td>
+                                                        <td>{{ item.unit }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                {% if shopping_list.customItems|length > 0 %}
+                                    {% for customItem in shopping_list.customItems %}
+                                        <tr class="table-info">
+                                            <td>
+                                                <input type="checkbox" class="form-check-input cart-checkbox"
+                                                       id="cart-custom-{{ customItem.id }}"
+                                                       data-custom-item-id="{{ customItem.id }}"
+                                                       aria-label="Mettre {{ customItem.name }} dans le caddie"
+                                                       {% if customItem.isInCart %}checked{% endif %}>
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-check-circle text-info"></i>
+                                            </td>
+                                            <td><label for="cart-custom-{{ customItem.id }}" class="d-block"><strong>{{ customItem.name }}</strong> <span class="badge bg-info">Article libre</span></label></td>
+                                            <td>{{ customItem.quantity ?? '-' }}</td>
+                                            <td>-</td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        Aucun ingrédient ni article trouvé.
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -126,95 +205,6 @@
                                 {% endif %}
                             </div>
                         </div>
-
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <h4 class="mb-3">
-                                    <i class="fas fa-shopping-basket me-2"></i>
-                                    Liste de courses complète
-                                </h4>
-                                {% set totalIngredients = shopping_list.totalIngredients %}
-                                {% if totalIngredients|length > 0 or shopping_list.customItems|length > 0 %}
-                                    <div class="table-responsive">
-                                        <table class="table table-hover table-striped">
-                                            <thead class="table-primary">
-                                                <tr>
-                                                    <th style="width: 50px;">
-                                                        <i class="fas fa-shopping-cart"></i>
-                                                    </th>
-                                                    <th style="width: 60px;">Action</th>
-                                                    <th>Ingrédient / Article</th>
-                                                    <th style="width: 150px;">Quantité totale</th>
-                                                    <th>Unité</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for item in totalIngredients %}
-                                                    <tr class="ingredient-row {% if item.isHidden %}table-dark text-white text-decoration-line-through{% endif %}" data-ingredient-id="{{ item.ingredient.id }}">
-                                                        <td>
-                                                            <input type="checkbox"
-                                                                   class="form-check-input cart-checkbox"
-                                                                   data-ingredient-id="{{ item.ingredient.id }}"
-                                                                   aria-label="Mettre {{ item.ingredient.name }} dans le caddie"
-                                                                   {% if item.isHidden %}disabled{% endif %}
-                                                                  {% if item.inCart %}checked{% endif %}>
-                                                        </td>
-                                                        <td>
-                                                            <button type="button"
-                                                                    class="btn btn-sm toggle-ingredient-btn {% if item.isHidden %}btn-success{% else %}btn-danger{% endif %}"
-                                                                    data-ingredient-id="{{ item.ingredient.id }}"
-                                                                    data-hidden="{{ item.isHidden ? 'true' : 'false' }}"
-                                                                    title="{{ item.isHidden ? 'Remettre dans la liste' : 'Retirer de la liste' }}">
-                                                                <i class="fas {% if item.isHidden %}fa-undo{% else %}fa-trash-alt{% endif %}"></i>
-                                                            </button>
-                                                        </td>
-                                                        <td>
-                                                            <strong class="ingredient-name {% if item.isHidden %}text-white{% endif %}">
-                                                                {{ item.ingredient.name }}
-                                                            </strong>
-                                                        </td>
-                                                        <td>
-                                                            <input type="number"
-                                                                   class="form-control form-control-sm quantity-input"
-                                                                   step="0.01"
-                                                                   value="{{ item.adjustedQuantity ?? item.quantity }}"
-                                                                   data-ingredient-id="{{ item.ingredient.id }}"
-                                                                   data-original-quantity="{{ item.quantity }}"
-                                                                   aria-label="Quantité totale pour {{ item.ingredient.name }}"
-                                                                   {% if item.isHidden %}disabled{% endif %}>
-                                                        </td>
-                                                        <td>{{ item.unit }}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                {% if shopping_list.customItems|length > 0 %}
-                                    {% for customItem in shopping_list.customItems %}
-                                        <tr class="table-info">
-                                            <td>
-                                                <input type="checkbox" class="form-check-input cart-checkbox"
-                                                       data-custom-item-id="{{ customItem.id }}"
-                                                       aria-label="Mettre {{ customItem.name }} dans le caddie"
-                                                       {% if customItem.isInCart %}checked{% endif %}>
-                                            </td>
-                                            <td>
-                                                <i class="fas fa-check-circle text-info"></i>
-                                            </td>
-                                            <td><strong>{{ customItem.name }}</strong> <span class="badge bg-info">Article libre</span></td>
-                                            <td>{{ customItem.quantity ?? '-' }}</td>
-                                            <td>-</td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endif %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                {% else %}
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        Aucun ingrédient ni article trouvé.
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
                     </div>
 
                     <div class="card-footer bg-light">
@@ -224,14 +214,14 @@
                                 <i class="fas fa-edit me-1"></i>
                                 Modifier
                             </a>
-                            <div class="row g-2">
-                                <div class="col-6">
+                            <div class="d-grid gap-2 grid-2-cols">
+                                <div>
                                     <a href="{{ path('app_shopping_list_index') }}" class="btn btn-secondary w-100">
                                         <i class="fas fa-arrow-left me-1"></i>
                                         Retour
                                     </a>
                                 </div>
-                                <div class="col-6">
+                                <div>
                                     <form method="post" action="{{ path('app_shopping_list_delete', {'id': shopping_list.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette liste de courses ?');" class="m-0">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ shopping_list.id) }}">
                                         <button type="submit" class="btn btn-danger w-100">
@@ -252,10 +242,47 @@
     document.addEventListener('DOMContentLoaded', function() {
         const adjustUrl = '{{ path('app_shopping_list_adjust_ingredient', {'id': shopping_list.id}) }}';
 
+        // Les ingrédients retirés sont masqués, sauf si l'utilisateur demande à les voir
+        let showRemoved = false;
+        const toggleRemovedWrapper = document.getElementById('removed-toggle-wrapper');
+        const toggleRemovedBtn = document.getElementById('toggle-removed-btn');
+
+        function refreshRemovedRows() {
+            const removedRows = document.querySelectorAll('.ingredient-row[data-removed="true"]');
+            removedRows.forEach(row => row.classList.toggle('d-none', !showRemoved));
+            if (!toggleRemovedBtn) {
+                return;
+            }
+            document.getElementById('removed-count').textContent = removedRows.length;
+            toggleRemovedWrapper.classList.toggle('d-none', removedRows.length === 0);
+            toggleRemovedBtn.setAttribute('aria-pressed', showRemoved ? 'true' : 'false');
+            toggleRemovedBtn.querySelector('.toggle-removed-label').textContent =
+                showRemoved ? 'Masquer les ingrédients retirés' : 'Afficher les ingrédients retirés';
+            toggleRemovedBtn.querySelector('i').className = showRemoved ? 'fas fa-eye-slash me-1' : 'fas fa-eye me-1';
+        }
+
+        if (toggleRemovedBtn) {
+            toggleRemovedBtn.addEventListener('click', function () {
+                showRemoved = !showRemoved;
+                refreshRemovedRows();
+            });
+        }
+
         // Initialisation : appliquer la classe verte aux lignes déjà cochées (persistées)
         document.querySelectorAll('.cart-checkbox').forEach(cbInit => {
             const rowInit = cbInit.closest('tr');
             const nameCellInit = rowInit.querySelector('.ingredient-name') || rowInit.querySelector('strong');
+            // Si c'est un article libre, vérifier aussi le localStorage fallback
+            const customItemIdInit = cbInit.dataset.customItemId;
+            if (customItemIdInit) {
+                const localKey = `shoppinglist:{{ shopping_list.id }}:custom:${customItemIdInit}`;
+                const stored = localStorage.getItem(localKey);
+                if (stored === '1') {
+                    cbInit.checked = true;
+                } else if (stored === '0') {
+                    cbInit.checked = false;
+                }
+            }
             if (cbInit.checked) {
                 rowInit.classList.add('table-success');
                 rowInit.classList.remove('table-dark', 'table-info', 'table-secondary', 'text-muted');
@@ -300,6 +327,16 @@
                     payload.ingredientId = ingredientId;
                 }
 
+                // Sauvegarde locale en fallback (utile si la migration serveur n'est pas appliquée)
+                if (customItemId) {
+                    const localKey = `shoppinglist:{{ shopping_list.id }}:custom:${customItemId}`;
+                    try {
+                        localStorage.setItem(localKey, inCart ? '1' : '0');
+                    } catch(e) {
+                        // localStorage peut échouer si stockage interdit, on ignore
+                    }
+                }
+
                 fetch(adjustUrl, {
                     method: 'POST',
                     headers: {
@@ -307,8 +344,24 @@
                     },
                     body: JSON.stringify(payload)
                 }).then(resp => resp.json()).then(data => {
-                    if (!data.success) console.error('Erreur sauvegarde inCart', data.error);
-                }).catch(err => console.error('Erreur réseau:', err));
+                    if (!data.success) {
+                        console.error('Erreur sauvegarde inCart', data.error);
+                        // si erreur serveur, garder fallback local pour custom
+                        if (customItemId) {
+                            const localKeyErr = `shoppinglist:{{ shopping_list.id }}:custom:${customItemId}`;
+                            try { localStorage.setItem(localKeyErr, inCart ? '1' : '0'); } catch(e) {}
+                        }
+                    } else {
+                        // si succès serveur, on peut nettoyer le fallback pour consistency
+                        if (customItemId) {
+                            const localKeyOk = `shoppinglist:{{ shopping_list.id }}:custom:${customItemId}`;
+                            try { localStorage.removeItem(localKeyOk); } catch(e) {}
+                        }
+                    }
+                }).catch(err => {
+                    console.error('Erreur réseau:', err);
+                    // sur erreur réseau, on laisse le fallback local
+                });
             });
         });
 
@@ -357,6 +410,8 @@
                 }
 
                 this.dataset.hidden = newHiddenState;
+                row.dataset.removed = newHiddenState ? 'true' : 'false';
+                refreshRemovedRows();
 
                 // Envoyer la modification au serveur
                 updateIngredient(ingredientId, { isHidden: newHiddenState });

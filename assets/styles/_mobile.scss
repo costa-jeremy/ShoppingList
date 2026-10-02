@@ -1,0 +1,111 @@
+// Ergonomie générale et mobile (chargé après Bootstrap pour pouvoir le surcharger)
+
+// Colonne principale : sans min-width: 0, un tableau large élargit toute la page
+// au lieu de défiler dans son .table-responsive
+.main-column {
+  min-width: 0;
+}
+
+// Barre du haut sur mobile
+.mobile-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  min-height: 56px;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-topbar-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-width: 0;
+}
+
+.menu-toggle {
+  width: 48px;
+  height: 48px;
+  font-size: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 0;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
+@include media-breakpoint-down(md) {
+  // Menu latéral : liens plus grands pour le doigt
+  .mynav li a {
+    padding: 12px 10px;
+    font-size: 1.1rem;
+  }
+
+  // Un seul niveau de marge latérale (base + container-fluid des pages).
+  // 12px = demi-gouttière Bootstrap : absorbe les marges négatives des .row
+  .main-content {
+    padding: 0.75rem !important;
+  }
+
+  .main-content .container-fluid {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  .main-content > .breadcrumb,
+  .main-content nav .breadcrumb {
+    margin-bottom: 0.25rem;
+  }
+
+  .main-content > hr {
+    margin: 0.5rem 0;
+  }
+
+  .main-content .card-body {
+    padding: 0.75rem;
+  }
+
+  // 16px minimum : sous cette taille, iOS zoome automatiquement sur le champ
+  .form-control,
+  .form-select {
+    font-size: 16px;
+  }
+}
+
+// Écrans tactiles : cibles d'au moins 40px
+@media (pointer: coarse) {
+  .btn-sm {
+    min-height: 40px;
+    min-width: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .form-check-input {
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  .cart-checkbox {
+    width: 1.75em;
+    height: 1.75em;
+  }
+
+  .btn-close {
+    padding: 0.75em;
+  }
+}
+
+// Deux boutons côte à côte dans un .d-grid (un .row y déborderait à cause de ses marges négatives)
+.grid-2-cols {
+  grid-template-columns: 1fr 1fr;
+}

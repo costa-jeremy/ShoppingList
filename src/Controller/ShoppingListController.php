@@ -10,6 +10,7 @@ use App\Repository\ShoppingListRepository;
 use App\Repository\ShoppingListIngredientAdjustmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
+use App\Security\Voter\OwnerVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -53,6 +54,8 @@ class ShoppingListController extends AbstractController
     #[Route('/{id}/show', name: 'app_shopping_list_show', methods: ['GET'])]
     public function show(ShoppingList $shoppingList): Response
     {
+        $this->denyAccessUnlessGranted(OwnerVoter::OWNER, $shoppingList);
+
         return $this->render('shopping_list/show.html.twig', [
             'shopping_list' => $shoppingList,
         ]);
@@ -61,6 +64,8 @@ class ShoppingListController extends AbstractController
     #[Route('/{id}/edit', name: 'app_shopping_list_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, ShoppingList $shoppingList, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted(OwnerVoter::OWNER, $shoppingList);
+
 
         $form = $this->createForm(ShoppingListType::class, $shoppingList);
 
@@ -82,6 +87,8 @@ class ShoppingListController extends AbstractController
     #[Route('/{id}/delete', name: 'app_shopping_list_delete', methods: ['POST'])]
     public function delete(Request $request, ShoppingList $shoppingList, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted(OwnerVoter::OWNER, $shoppingList);
+
         if ($this->isCsrfTokenValid('delete'.$shoppingList->getId(), $request->request->get('_token'))) {
             $entityManager->remove($shoppingList);
             $entityManager->flush();
@@ -96,6 +103,8 @@ class ShoppingListController extends AbstractController
     #[Route('{id}/download-pdf', name: 'app_shopping_list_download_pdf', methods: ['GET'])]
     public function downloadPdf(ShoppingList $shoppingList, Pdf $pdf)
     {
+        $this->denyAccessUnlessGranted(OwnerVoter::OWNER, $shoppingList);
+
         $html = $this->renderView('shopping_list/pdf.html.twig', ['shoppingList' => $shoppingList]);
 
         // Créer un nom de fichier basé sur le nom de la liste ou la date
@@ -122,6 +131,8 @@ class ShoppingListController extends AbstractController
         ShoppingListIngredientAdjustmentRepository $adjustmentRepository,
         EntityManagerInterface $entityManager
     ): JsonResponse {
+        $this->denyAccessUnlessGranted(OwnerVoter::OWNER, $shoppingList);
+
         $data = json_decode($request->getContent(), true);
         $ingredientId = $data['ingredientId'] ?? null;
         $customItemId = $data['customItemId'] ?? null;
@@ -139,7 +150,7 @@ class ShoppingListController extends AbstractController
         // Si customItemId fourni, traiter l'article libre
         if ($customItemId) {
             $customItem = $entityManager->getRepository(\App\Entity\ShoppingListItem::class)->find($customItemId);
-            if (!$customItem) {
+            if (!$customItem || $customItem->getShoppingList() !== $shoppingList) {
                 return new JsonResponse(['error' => 'Article libre non trouvé'], 404);
             }
 
@@ -154,7 +165,7 @@ class ShoppingListController extends AbstractController
         }
 
         $ingredient = $ingredientRepository->find($ingredientId);
-        if (!$ingredient) {
+        if (!$ingredient || !$this->isGranted(OwnerVoter::OWNER, $ingredient)) {
             return new JsonResponse(['error' => 'Ingrédient non trouvé'], 404);
         }
 
