@@ -1,49 +1,43 @@
-// Service Worker pour CuisiNotes PWA
-const CACHE_NAME = 'cuisinotes-v1';
-const urlsToCache = [
-  '/',
-  '/build/app.css',
-  '/build/app.js',
+// Service Worker de la PWA Cuisinotes.
+// Réseau d'abord : l'appli est toujours à jour en ligne ; le cache ne sert que hors connexion.
+// Les assets Encore ont des noms hashés en prod, on ne les précharge donc pas : ils sont mis
+// en cache au fil de la navigation. Changer CACHE_NAME purge les anciens caches.
+const CACHE_NAME = 'cuisinotes-v2';
+const PRECACHE = [
   '/favicon.svg',
-  '/favicon-192.png',
-  '/favicon-512.png'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
-// Installation du service worker
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Cache ouvert');
-        return cache.addAll(urlsToCache);
-      })
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE)));
+  self.skipWaiting();
 });
 
-// Activation du service worker
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Suppression ancien cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    caches.keys()
+      .then(names => Promise.all(names.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))))
+      .then(() => self.clients.claim())
   );
 });
 
-// Interception des requêtes
 self.addEventListener('fetch', event => {
+  const request = event.request;
+  // On ne touche qu'aux GET de notre domaine (pas aux formulaires, à l'AJAX POST ni aux CDN)
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
+    fetch(request)
       .then(response => {
-        // Retourner le cache si disponible, sinon faire la requête
-        return response || fetch(event.request);
+        if (response.ok && new URL(request.url).pathname.startsWith('/build/')) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        }
+        return response;
       })
+      .catch(() => caches.match(request))
   );
 });
-
