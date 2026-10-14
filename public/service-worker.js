@@ -5,8 +5,8 @@
 const CACHE_NAME = 'cuisinotes-v2';
 const PRECACHE = [
   '/favicon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  '/app-icons/icon-192.png',
+  '/app-icons/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
