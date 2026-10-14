@@ -6,51 +6,43 @@
   min-width: 0;
 }
 
-// Barre du haut sur mobile
-.mobile-topbar {
-  position: sticky;
-  top: 0;
-  z-index: 1020;
-  min-height: 56px;
-  padding: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.mobile-topbar-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  min-width: 0;
-}
-
-.menu-toggle {
-  width: 48px;
-  height: 48px;
-  font-size: 1.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 0;
-
-  &:hover,
-  &:focus,
-  &:active {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.15);
-  }
-}
-
 @include media-breakpoint-down(md) {
-  // Menu latéral : liens plus grands pour le doigt
-  .mynav li a {
-    padding: 12px 10px;
-    font-size: 1.1rem;
+  // Menu latéral (offcanvas) : liens plus grands pour le doigt
+  .app-nav a {
+    padding: .7rem .75rem;
+    font-size: 1.05rem;
   }
 
   // Un seul niveau de marge latérale (base + container-fluid des pages).
-  // 12px = demi-gouttière Bootstrap : absorbe les marges négatives des .row
+  // 12px = demi-gouttière Bootstrap : absorbe les marges négatives des .row.
+  // En bas, on laisse la place à la barre d'onglets fixe.
   .main-content {
-    padding: 0.75rem !important;
+    padding: 0.75rem 0.75rem calc(#{$tabbar-height} + 1.25rem + env(safe-area-inset-bottom)) !important;
+  }
+
+  .page-header {
+    margin-bottom: 1rem;
+
+    h1 {
+      font-size: 1.6rem;
+    }
+  }
+
+  .hero-card {
+    padding: 1.35rem;
+
+    h1 {
+      font-size: 1.55rem;
+    }
+  }
+
+  .item-row {
+    padding: .75rem .85rem;
+    gap: .75rem;
+  }
+
+  .card-header {
+    padding: .75rem;
   }
 
   .main-content .container-fluid {
@@ -58,15 +50,6 @@
     padding-right: 0;
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
-  }
-
-  .main-content > .breadcrumb,
-  .main-content nav .breadcrumb {
-    margin-bottom: 0.25rem;
-  }
-
-  .main-content > hr {
-    margin: 0.5rem 0;
   }
 
   .main-content .card-body {

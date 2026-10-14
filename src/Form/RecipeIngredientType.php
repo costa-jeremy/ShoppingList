@@ -28,7 +28,8 @@ class RecipeIngredientType extends AbstractType
         $builder
             ->add('ingredient', EntityType::class, [
                 'class' => Ingredient::class,
-                'choice_label' => 'name',
+                // L'unité distingue les variantes d'un même ingrédient (ex. lait en ml / en L)
+                'choice_label' => fn (Ingredient $ingredient) => sprintf('%s (%s)', $ingredient->getName(), $ingredient->getUnit()),
                 'placeholder' => 'Choisir un ingrédient',
                 'required' => true,
                 'label' => false,
@@ -36,7 +37,8 @@ class RecipeIngredientType extends AbstractType
                     return $er->createQueryBuilder('i')
                         ->where('i.user = :user')
                         ->setParameter('user', $user)
-                        ->orderBy('i.name', 'ASC');
+                        ->orderBy('i.name', 'ASC')
+                        ->addOrderBy('i.unit', 'ASC');
                 },
                 'row_attr' => [
                     'class' => 'mb-2'

@@ -34,13 +34,15 @@ class IngredientController extends AbstractController
     public function checkDuplicate(Request $request, IngredientRepository $ingredientRepository): JsonResponse
     {
         $excludeId = $request->query->getInt('exclude') ?: null;
-        $duplicates = $ingredientRepository->findDuplicates($this->getUser(), $request->query->get('name'), $excludeId);
+        // Tous les homonymes, quelle que soit l'unité : le formulaire distingue lui-même
+        // le doublon (même unité, bloquant) de la variante dans une autre unité (simple info)
+        $sameName = $ingredientRepository->findDuplicates($this->getUser(), $request->query->get('name'), null, $excludeId);
 
         return $this->json(array_map(static fn (Ingredient $ingredient) => [
             'id' => $ingredient->getId(),
             'name' => $ingredient->getName(),
             'unit' => $ingredient->getUnit(),
-        ], $duplicates));
+        ], $sameName));
     }
 
     /**
@@ -64,12 +66,12 @@ class IngredientController extends AbstractController
             return $this->json(['error' => 'Veuillez choisir une unité.'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $duplicates = $ingredientRepository->findDuplicates($this->getUser(), $name);
+        $duplicates = $ingredientRepository->findDuplicates($this->getUser(), $name, $unit);
         if ($duplicates) {
             $existing = $duplicates[0];
 
             return $this->json([
-                'error' => sprintf('Un ingrédient similaire existe déjà : « %s ».', $existing->getName()),
+                'error' => sprintf('Un ingrédient similaire existe déjà dans cette unité : « %s » (%s).', $existing->getName(), $existing->getUnit()),
                 'existing' => ['id' => $existing->getId(), 'name' => $existing->getName(), 'unit' => $existing->getUnit()],
             ], Response::HTTP_CONFLICT);
         }
@@ -159,18 +161,19 @@ class IngredientController extends AbstractController
     }
 
     /**
-     * Ajoute une erreur sur le champ nom si un ingrédient équivalent existe déjà.
+     * Ajoute une erreur sur le champ nom si un ingrédient équivalent existe déjà dans la même unité.
      */
     private function rejectDuplicate(FormInterface $form, Ingredient $ingredient, IngredientRepository $ingredientRepository): bool
     {
-        $duplicates = $ingredientRepository->findDuplicates($this->getUser(), $ingredient->getName(), $ingredient->getId());
+        $duplicates = $ingredientRepository->findDuplicates($this->getUser(), $ingredient->getName(), $ingredient->getUnit(), $ingredient->getId());
         if (!$duplicates) {
             return false;
         }
 
         $form->get('name')->addError(new FormError(sprintf(
-            'Un ingrédient similaire existe déjà : « %s ».',
-            $duplicates[0]->getName()
+            'Un ingrédient similaire existe déjà dans cette unité : « %s » (%s). Choisissez une autre unité pour créer une variante.',
+            $duplicates[0]->getName(),
+            $duplicates[0]->getUnit()
         )));
 
         return true;

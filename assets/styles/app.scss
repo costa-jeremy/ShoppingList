@@ -1,13 +1,4 @@
-@import "custom";
+@import "variables";
 @import "~bootstrap/scss/bootstrap";
+@import "custom";
 @import "mobile";
-
-body {
-    background-color: grey;
-}
-
-.hover-opacity:hover {
-    opacity: 0.8;
-    transition: opacity 0.2s ease;
-}
-

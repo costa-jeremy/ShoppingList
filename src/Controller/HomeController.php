@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Repository\IngredientRepository;
 use App\Repository\ShoppingListRepository;
 use App\Repository\RecipeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,7 +13,7 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="app_home")
      */
-    public function index(ShoppingListRepository $shoppingListRepository, RecipeRepository $recipeRepository): Response
+    public function index(ShoppingListRepository $shoppingListRepository, RecipeRepository $recipeRepository, IngredientRepository $ingredientRepository): Response
     {
         $user = $this->getUser();
 
@@ -37,6 +38,11 @@ class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'recentShoppingLists' => $recentShoppingLists,
             'recentRecipes' => $recentRecipes,
+            'counts' => [
+                'recipes' => $recipeRepository->count(['user' => $user]),
+                'shoppingLists' => $shoppingListRepository->count(['user' => $user]),
+                'ingredients' => $ingredientRepository->count(['user' => $user]),
+            ],
         ]);
     }
 }

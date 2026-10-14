@@ -1,20 +1,22 @@
 <!DOCTYPE html>
-<html lang="FR">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}CuisiNotes{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#198754">
+    <meta name="theme-color" content="#f7f4ee">
     <link rel="apple-touch-icon" href="{{ asset('favicon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="CuisiNotes">
     {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
     {% block stylesheets %}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
         {{ encore_entry_link_tags('app') }}
-
 
         <link rel="stylesheet" href=
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -31,119 +33,120 @@
 <body>
 
 {% set current_route = app.request.attributes.get('_route') ?? '' %}
-<div class="container-fluid p-0 d-flex min-vh-100">
-    {% if app.user %}
-    <div id="bdSidebar"
-         class="d-flex flex-column
-                    flex-shrink-0
-                    p-3 bg-success
-                    text-white offcanvas-md offcanvas-start"
-         tabindex="-1" aria-label="Menu principal">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">
-                <a href="{{ path('app_home') }}" class="text-white text-decoration-none">
-                    <i class="fa-solid fa-utensils me-2"></i>
-                    Cuisinotes
-                </a>
-            </h4>
-            <button type="button" class="btn-close btn-close-white d-md-none"
+{% set flash_messages %}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {% if label == 'success' %}
+                    <i class="fas fa-check-circle me-2"></i>
+                {% elseif label == 'error' or label == 'danger' %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                {% elseif label == 'warning' %}
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                {% else %}
+                    <i class="fas fa-info-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+{% endset %}
+
+{% if app.user %}
+{% set nav_items = [
+    {route: 'app_home', prefix: 'app_home', icon: 'fa-house', label: 'Tableau de bord', short: 'Accueil'},
+    {route: 'app_recipe_index', prefix: 'app_recipe', icon: 'fa-book-open', label: 'Mes recettes', short: 'Recettes'},
+    {route: 'app_shopping_list_index', prefix: 'app_shopping_list', icon: 'fa-basket-shopping', label: 'Mes listes de courses', short: 'Listes'},
+    {route: 'app_ingredient_index', prefix: 'app_ingredient', icon: 'fa-carrot', label: 'Mes ingrédients', short: 'Ingrédients'},
+] %}
+<div class="app-shell">
+    <aside id="bdSidebar" class="app-sidebar offcanvas-md offcanvas-start" tabindex="-1" aria-label="Menu principal">
+        <div class="d-flex justify-content-between align-items-center">
+            {{ include('_partials/brand.html.twig') }}
+            <button type="button" class="btn-close d-md-none"
                     data-bs-dismiss="offcanvas" data-bs-target="#bdSidebar" aria-label="Fermer le menu"></button>
         </div>
-        <hr>
-        <ul class="mynav nav nav-pills flex-column mb-auto">
-            <li class="nav-item mb-1">
-                <a href="{{ path('app_recipe_index') }}" class="{{ current_route starts with 'app_recipe' ? 'active' }}">
-                    <i class="fa-regular fa-bookmark"></i>
-                    Mes recettes
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ path('app_ingredient_index') }}" class="{{ current_route starts with 'app_ingredient' ? 'active' }}">
-                    <i class="fa-solid fa-pepper-hot"></i>
-                    Mes ingrédients
-                </a>
-            </li>
-            <li class="nav-item mb-1">
-                <a href="{{ path('app_shopping_list_index') }}" class="{{ current_route starts with 'app_shopping_list' ? 'active' }}">
-                    <i class="fa-regular fa-newspaper"></i>
-                    Mes listes de course
-                </a>
-            </li>
-            <li class="nav-item mb-1">
+
+        <ul class="app-nav">
+            {% for item in nav_items %}
+                <li>
+                    <a href="{{ path(item.route) }}" class="{{ current_route starts with item.prefix ? 'active' }}"
+                       {% if current_route starts with item.prefix %}aria-current="page"{% endif %}>
+                        <i class="fa-solid {{ item.icon }}"></i>
+                        {{ item.label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <div class="nav-section-label">Aide</div>
+        <ul class="app-nav mt-0">
+            <li>
                 <a href="{{ path('app_how_it_works') }}" class="{{ current_route starts with 'app_how_it_works' ? 'active' }}">
-                    <i class="fa-solid fa-circle-info"></i>
+                    <i class="fa-solid fa-circle-question"></i>
                     Comment ça marche ?
                 </a>
             </li>
         </ul>
-        <hr>
-        <div class="d-flex flex-column">
-            <a href="{{ path('app_account_settings') }}" class="text-white text-decoration-none mb-2 hover-opacity">
-                <i class="fa-solid fa-user me-2"></i>
-                <span>{{ app.user.email }}</span>
-            </a>
-            <a href="{{ path('app_logout') }}" class="btn btn-outline-light btn-sm">
-                <i class="fa-solid fa-right-from-bracket me-2"></i>
-                Déconnexion
-            </a>
+
+        <div class="mt-auto pt-4">
+            <div class="sidebar-user">
+                <span class="avatar">{{ app.user.email|first }}</span>
+                <a href="{{ path('app_account_settings') }}" class="email text-truncate flex-fill" title="Mon compte">
+                    {{ app.user.email }}
+                </a>
+                <a href="{{ path('app_logout') }}" class="btn btn-action btn-action-danger" title="Déconnexion" aria-label="Déconnexion">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
         </div>
-    </div>
-    {% endif %}
+    </aside>
 
-    <div class="bg-light flex-fill main-column">
-        {% if app.user %}
-        <div class="mobile-topbar d-md-none d-flex align-items-center text-white bg-success">
-            <button type="button" class="menu-toggle btn text-white"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#bdSidebar"
-                    aria-controls="bdSidebar"
-                    aria-label="Ouvrir le menu">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <span class="mobile-topbar-title text-truncate">{{ block('title') }}</span>
-            <a href="{{ path('app_home') }}" class="menu-toggle btn text-white ms-auto" aria-label="Tableau de bord">
-                <i class="fa-solid fa-house"></i>
+    <div class="flex-fill main-column">
+        <header class="app-topbar d-md-none">
+            <a href="{{ path('app_home') }}" class="brand" aria-label="Cuisinotes, accueil">
+                <span class="brand-mark">{{ include('_partials/logo_mark.html.twig') }}</span>
             </a>
-        </div>
-        {% endif %}
-        <div class="main-content p-md-4">
-            {% block breadcrumb %}
-            <nav style="--bs-breadcrumb-divider:'>';font-size:14px">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <i class="fa-solid fa-house"></i>
-                    </li>
-                    <li class="breadcrumb-item">Accueil</li>
-                </ol>
-            </nav>
-            {% endblock %}
+            <span class="app-topbar-title text-truncate">{{ block('title') }}</span>
+        </header>
 
-            <hr>
+        <main class="main-content">
+            <div class="breadcrumb-nav d-none d-md-block">
+                {% block breadcrumb %}{% endblock %}
+            </div>
 
-            {# Messages flash #}
-            {% for label, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
-                        {% if label == 'success' %}
-                            <i class="fas fa-check-circle me-2"></i>
-                        {% elseif label == 'error' or label == 'danger' %}
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                        {% elseif label == 'warning' %}
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                        {% else %}
-                            <i class="fas fa-info-circle me-2"></i>
-                        {% endif %}
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endfor %}
+            {{ flash_messages }}
 
             {% block body %}{% endblock %}
-        </div>
+        </main>
+    </div>
 
+    <nav class="app-tabbar d-md-none" aria-label="Navigation principale">
+        {% for item in nav_items %}
+            <a href="{{ path(item.route) }}" class="{{ current_route starts with item.prefix ? 'active' }}"
+               {% if current_route starts with item.prefix %}aria-current="page"{% endif %}>
+                <i class="fa-solid {{ item.icon }}"></i>
+                {{ item.short }}
+            </a>
+        {% endfor %}
+        <a href="#bdSidebar" role="button" data-bs-toggle="offcanvas" aria-controls="bdSidebar"
+           class="{{ current_route starts with 'app_account' or current_route starts with 'app_how_it_works' ? 'active' }}">
+            <i class="fa-solid fa-ellipsis"></i>
+            Plus
+        </a>
+    </nav>
+</div>
+{% else %}
+<div class="auth-wrapper">
+    {{ include('_partials/brand.html.twig', {size: 'brand-lg'}) }}
+    <p class="auth-tagline">Vos recettes, vos ingrédients et vos listes de courses, au même endroit.</p>
+    <div class="auth-card">
+        {{ flash_messages }}
+        {{ block('body') }}
     </div>
 </div>
+{% endif %}
 
 <script>
     // Enregistrement du Service Worker pour PWA (uniquement en production)

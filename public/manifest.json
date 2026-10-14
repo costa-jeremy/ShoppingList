@@ -1,11 +1,11 @@
 {
   "name": "CuisiNotes",
   "short_name": "CuisiNotes",
-  "description": "Votre application de gestion de recettes et listes de courses",
+  "description": "Vos recettes, vos ingrédients et vos listes de courses, au même endroit",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#198754",
+  "background_color": "#f7f4ee",
+  "theme_color": "#f7f4ee",
   "orientation": "portrait",
   "icons": [
     {

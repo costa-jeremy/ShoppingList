@@ -42,10 +42,12 @@ class IngredientRepository extends ServiceEntityRepository
 
     /**
      * Ingrédients de l'utilisateur dont le nom normalisé est identique à $name.
+     * Avec $unit, seuls ceux de la même unité sont renvoyés (les vrais doublons) :
+     * un même ingrédient peut exister dans plusieurs unités (ex. lait en ml et en L).
      *
      * @return Ingredient[]
      */
-    public function findDuplicates(User $user, ?string $name, ?int $excludeId = null): array
+    public function findDuplicates(User $user, ?string $name, ?string $unit = null, ?int $excludeId = null): array
     {
         $normalized = Ingredient::normalizeName($name);
         if ($normalized === '') {
@@ -55,12 +57,13 @@ class IngredientRepository extends ServiceEntityRepository
         return array_values(array_filter(
             $this->findBy(['user' => $user]),
             static fn (Ingredient $ingredient) => $ingredient->getId() !== $excludeId
+                && ($unit === null || $ingredient->getUnit() === $unit)
                 && Ingredient::normalizeName($ingredient->getName()) === $normalized
         ));
     }
 
     /**
-     * Ids des ingrédients de l'utilisateur qui ont au moins un doublon.
+     * Ids des ingrédients de l'utilisateur qui ont au moins un doublon (même nom normalisé et même unité).
      *
      * @return int[]
      */
@@ -68,7 +71,7 @@ class IngredientRepository extends ServiceEntityRepository
     {
         $groups = [];
         foreach ($this->findBy(['user' => $user]) as $ingredient) {
-            $groups[Ingredient::normalizeName($ingredient->getName())][] = $ingredient->getId();
+            $groups[Ingredient::normalizeName($ingredient->getName()) . '|' . $ingredient->getUnit()][] = $ingredient->getId();
         }
 
         return array_merge([], ...array_values(array_filter($groups, static fn (array $ids) => count($ids) > 1)));

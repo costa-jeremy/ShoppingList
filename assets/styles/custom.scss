@@ -1,45 +1,813 @@
+// Composants et mise en page Cuisinotes (importé APRÈS Bootstrap)
+
+$sidebar-width: 264px;
+$tabbar-height: 64px;
+$basil-tint: #e4f2eb;
+$tomato-tint: #fde9e1;
+
 html, body {
-  height: 100%;
-  font-family: 'Ubuntu', sans-serif;
+  min-height: 100%;
 }
 
-.gfg {
-  height: 50px;
-  width: 50px;
-
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mynav {
-  color: #fff;
+h1, h2, h3, .h1, .h2, .h3 {
+  letter-spacing: -.01em;
 }
 
-.mynav li a {
-  color: #fff;
+// Les titres de carte, de liste et de formulaire restent dans la police du texte
+h4, h5, h6, .h4, .h5, .h6, .card-header .h5, .card-header h5 {
+  font-family: $font-family-sans-serif;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: rgba($tomato, .25);
+}
+
+// ---------- Marque ----------
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  color: $ink;
   text-decoration: none;
-  width: 100%;
+
+  &:hover {
+    color: $ink;
+  }
+}
+
+.brand-mark {
+  --logo-ink: #{$basil-dark};
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: .3rem;
+  flex-shrink: 0;
+  color: #fffaf2;
+  border-radius: .8rem;
+  background: linear-gradient(135deg, #2fa577, $basil-dark);
+  box-shadow: 0 4px 12px rgba($basil, .3);
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+.brand-word {
+  font-family: $headings-font-family;
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1;
+
+  span {
+    color: $tomato;
+    font-style: italic;
+    font-weight: 500;
+  }
+}
+
+.brand-lg {
+  .brand-mark {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.2rem;
+    padding: .5rem;
+  }
+
+  .brand-word {
+    font-size: 2.2rem;
+  }
+}
+
+// ---------- Structure ----------
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  --bs-offcanvas-width: #{$sidebar-width};
+  --bs-offcanvas-bg: #fff;
+  width: $sidebar-width;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem;
+  background: #fff;
+  border-right: 1px solid $border-color;
+
+  @include media-breakpoint-up(md) {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+.app-nav {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+
+  li + li {
+    margin-top: .25rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .55rem .75rem;
+    border-radius: .8rem;
+    color: $ink;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .15s ease, color .15s ease;
+
+    i {
+      width: 2rem;
+      height: 2rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: .6rem;
+      color: $secondary;
+      background: $light;
+      transition: inherit;
+    }
+
+    &:hover {
+      background: $light;
+    }
+
+    &.active {
+      background: $basil-tint;
+      color: $basil-dark;
+      font-weight: 700;
+
+      i {
+        background: $basil;
+        color: #fff;
+      }
+    }
+  }
+}
+
+.nav-section-label {
+  margin: 1.5rem .75rem .25rem;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: $text-muted;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .75rem;
+  border-radius: .9rem;
+  background: $cream;
+
+  .avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: $tomato;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .email {
+    min-width: 0;
+    font-size: .85rem;
+    font-weight: 600;
+    color: $ink;
+    text-decoration: none;
+  }
+}
+
+.main-content {
+  padding: 1.75rem 2rem 2.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.main-content > .breadcrumb-nav .breadcrumb {
+  font-size: .85rem;
+  margin-bottom: .25rem;
+
+  a {
+    color: $text-muted;
+  }
+}
+
+// ---------- Barre du haut et barre d'onglets (mobile) ----------
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  min-height: 60px;
+  padding: .4rem .5rem .4rem .75rem;
+  padding-top: calc(.4rem + env(safe-area-inset-top));
+  background: rgba($cream, .85);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid rgba($border-color, .7);
+
+  .brand-mark {
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: .65rem;
+    box-shadow: none;
+  }
+}
+
+.app-topbar-title {
+  min-width: 0;
+  font-family: $headings-font-family;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.app-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  display: flex;
+  justify-content: space-around;
+  height: calc(#{$tabbar-height} + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(#fff, .92);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-top: 1px solid rgba($border-color, .8);
+
+  a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .2rem;
+    font-size: .7rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-decoration: none;
+
+    i {
+      width: 3.5rem;
+      height: 1.85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      border-radius: 1rem;
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    &.active {
+      color: $basil-dark;
+
+      i {
+        background: $basil-tint;
+        color: $basil;
+      }
+    }
+  }
+}
+
+// ---------- En-têtes de page ----------
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem 1rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .page-subtitle {
+    margin: .2rem 0 0;
+    color: $text-muted;
+  }
+}
+
+// Icône d'un titre de page ou de carte
+h1 > i:first-child,
+.card-header h1 > i:first-child,
+.card-header h2 > i:first-child,
+.card-header h4 > i:first-child,
+.card-header h5 > i:first-child {
+  color: $tomato;
+}
+
+// ---------- Cartes ----------
+.card {
+  box-shadow: $box-shadow-sm;
+}
+
+.card.shadow-sm {
+  box-shadow: $box-shadow-sm !important;
+}
+
+.card-header {
+  border-bottom: 1px solid $border-color;
+
+  h1, .h3 {
+    font-size: 1.5rem;
+  }
+}
+
+.card-footer {
+  background: transparent;
+  border-top: 1px solid $border-color;
+}
+
+// ---------- Boutons ----------
+.btn-primary,
+.btn-success {
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-color: #fff;
+  box-shadow: 0 2px 8px rgba($basil, .25);
+}
+
+.btn-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-hover-color: #fff;
+}
+
+.btn-secondary {
+  --bs-btn-color: #{$ink};
+  --bs-btn-bg: #{$light};
+  --bs-btn-border-color: #{$light};
+  --bs-btn-hover-color: #{$ink};
+  --bs-btn-hover-bg: #e6e1d8;
+  --bs-btn-hover-border-color: #e6e1d8;
+  --bs-btn-active-color: #{$ink};
+  --bs-btn-active-bg: #ddd7cc;
+  --bs-btn-active-border-color: #ddd7cc;
+}
+
+// Bouton teinté : fond vert pâle, texte vert
+.btn-soft {
+  --bs-btn-color: #{$basil-dark};
+  --bs-btn-bg: #{$basil-tint};
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$basil-dark};
+  --bs-btn-hover-bg: #d3eadf;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$basil-dark};
+  --bs-btn-active-bg: #c4e2d4;
+  --bs-btn-active-border-color: transparent;
+}
+
+// Bouton d'action en icône (listes)
+.btn-action {
+  --bs-btn-color: #{$secondary};
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: #{$basil-dark};
+  --bs-btn-hover-bg: #{$basil-tint};
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: #{$basil-dark};
+  --bs-btn-active-bg: #{$basil-tint};
+  --bs-btn-active-border-color: transparent;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: .65rem;
+
+  &.btn-action-danger {
+    --bs-btn-hover-color: #{$danger};
+    --bs-btn-hover-bg: #{$tomato-tint};
+    --bs-btn-active-color: #{$danger};
+    --bs-btn-active-bg: #{$tomato-tint};
+  }
+}
+
+// ---------- Formulaires ----------
+.form-label {
+  font-weight: 600;
+  font-size: .9rem;
+}
+
+.input-group-text {
+  background: #fff;
+  color: $text-muted;
+}
+
+.input-group > .input-group-text + .form-control {
+  border-left: 0;
+}
+
+// ---------- Tableaux ----------
+.table {
+  --bs-table-bg: transparent;
+
+  > thead th {
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  > thead.table-light,
+  > thead.table-primary {
+    --bs-table-bg: #faf8f4;
+    --bs-table-color: #{$text-muted};
+    --bs-table-border-color: #{$border-color};
+  }
+
+  > :not(caption) > * > * {
+    border-bottom-color: $border-color;
+  }
+
+  > tbody > tr:last-child > * {
+    border-bottom: 0;
+  }
+}
+
+// Ingrédients retirés d'une liste : grisés plutôt qu'en noir
+.table > tbody > tr.ingredient-row.table-dark {
+  --bs-table-bg: #f1eee8;
+  --bs-table-striped-bg: #f1eee8;
+  --bs-table-hover-bg: #ebe7e0;
+  --bs-table-color: #{$text-muted};
+  --bs-table-striped-color: #{$text-muted};
+  --bs-table-hover-color: #{$text-muted};
+  --bs-table-border-color: #{$border-color};
+
+  &.text-white,
+  .text-white {
+    color: $text-muted !important;
+  }
+}
+
+.table > tbody > tr.table-info {
+  --bs-table-bg: #eef6fc;
+  --bs-table-striped-bg: #eef6fc;
+  --bs-table-color: #{$ink};
+  --bs-table-striped-color: #{$ink};
+  --bs-table-border-color: #{$border-color};
+}
+
+// ---------- Listes d'éléments (index) ----------
+.item-list {
+  overflow: hidden;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .85rem 1.1rem;
+  border-bottom: 1px solid $border-color;
+  transition: background-color .15s ease;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover {
+    background: #fcfbf8;
+  }
+}
+
+.item-avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: .85rem;
+  font-family: $headings-font-family;
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  color: $basil-dark;
+  background: $basil-tint;
+
+  &.avatar-tomato {
+    color: #c2471d;
+    background: $tomato-tint;
+  }
+
+  &.avatar-sky {
+    color: #24679e;
+    background: #e3eff9;
+  }
+}
+
+.item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
   display: block;
-  border-radius: 5px;
-  padding: 8px 5px;
+  font-weight: 700;
+  color: $ink;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    color: $basil;
+  }
+
+  // Lien étiré : toute la ligne est cliquable, les actions restent au-dessus
+  &.stretched-link::after {
+    z-index: 0;
+  }
 }
 
-.mynav li a.active {
-  background: rgba(255, 255, 255, 0.2);
+.item-row {
+  position: relative;
 }
 
-.mynav li a:hover {
-  background: rgba(255, 255, 255, 0.2);
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem .75rem;
+  margin-top: .15rem;
+  font-size: .82rem;
+  color: $text-muted;
 }
 
-.mynav li a i {
-  width: 25px;
+.item-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: .15rem;
+  flex-shrink: 0;
+}
+
+.unit-pill {
+  display: inline-block;
+  padding: .15rem .55rem;
+  border-radius: 2rem;
+  font-size: .78rem;
+  font-weight: 700;
+  color: $basil-dark;
+  background: $basil-tint;
+}
+
+.empty-state {
+  padding: 3rem 1.5rem;
   text-align: center;
+  color: $text-muted;
+
+  .empty-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.4rem;
+    font-size: 1.75rem;
+    color: $tomato;
+    background: $tomato-tint;
+  }
 }
 
-.notification-badge {
-  background-color: rgba(255, 255, 255, 0.7);
-  float: right;
-  color: #222;
-  font-size: 14px;
-  padding: 0px 8px;
-  border-radius: 2px;
+// ---------- Recherche ----------
+.search-bar {
+  .form-control {
+    border-radius: 2rem !important;
+    padding-left: 2.75rem;
+  }
+
+  position: relative;
+
+  > i {
+    position: absolute;
+    left: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $text-muted;
+    z-index: 5;
+    pointer-events: none;
+  }
+}
+
+// ---------- Tableau de bord ----------
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.75rem;
+  border-radius: 1.4rem;
+  color: #fff;
+  background: linear-gradient(135deg, #2fa577 0%, $basil 45%, $basil-dark 100%);
+  box-shadow: 0 10px 30px rgba($basil, .25);
+
+  h1 {
+    color: #fff;
+    font-size: 2rem;
+    margin-bottom: .35rem;
+  }
+
+  p {
+    opacity: .9;
+    margin-bottom: 0;
+  }
+
+  // Grande toque en filigrane
+  .hero-mark {
+    position: absolute;
+    right: -1.5rem;
+    bottom: -2rem;
+    width: 11rem;
+    color: rgba(#fff, .1);
+    --logo-ink: transparent;
+    pointer-events: none;
+
+    path {
+      stroke: transparent;
+    }
+  }
+}
+
+.stat-tile {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  height: 100%;
+  padding: 1rem 1.1rem;
+  border-radius: 1.1rem;
+  background: #fff;
+  color: $ink;
+  text-decoration: none;
+  box-shadow: $box-shadow-sm;
+  transition: transform .15s ease, box-shadow .15s ease;
+
+  &:hover {
+    color: $ink;
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+
+  .stat-value {
+    font-family: $headings-font-family;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: .8rem;
+    color: $text-muted;
+  }
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .9rem 1rem;
+  border-radius: 1rem;
+  border: 1.5px dashed #d8d1c4;
+  color: $ink;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover {
+    color: $basil-dark;
+    border-color: $basil;
+    background: rgba($basil-tint, .5);
+  }
+
+  i {
+    color: $tomato;
+  }
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .75rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+  }
+
+  a {
+    font-size: .875rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
+
+// ---------- Connexion / inscription ----------
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(circle at 15% 10%, rgba($tomato, .12), transparent 35%),
+    radial-gradient(circle at 85% 90%, rgba($basil, .14), transparent 40%),
+    $cream;
+
+  .auth-card {
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  .auth-tagline {
+    color: $text-muted;
+    margin: .75rem 0 1.75rem;
+    text-align: center;
+  }
+}
+
+.hover-opacity:hover {
+  opacity: .8;
+  transition: opacity .2s ease;
+}
+
+// Les pages ont leur propre .container-fluid : la marge est déjà portée par .main-content
+.main-content > .container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: .5rem !important;
+}
+
+// Liste de courses : bouton retirer/remettre en version douce
+.shopping-table .toggle-ingredient-btn {
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 0;
+  border-radius: .6rem;
+
+  &.btn-danger {
+    color: $danger;
+    background: $tomato-tint;
+  }
+
+  &.btn-success {
+    color: $basil-dark;
+    background: $basil-tint;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  // Tableau de la liste de courses compacté pour tenir sans défilement horizontal
+  .shopping-table {
+    > :not(caption) > * > * {
+      padding: .6rem .3rem;
+    }
+
+    th {
+      width: auto !important;
+    }
+
+    .quantity-input {
+      width: 3.75rem;
+      padding-left: .4rem;
+      padding-right: .2rem;
+    }
+  }
 }

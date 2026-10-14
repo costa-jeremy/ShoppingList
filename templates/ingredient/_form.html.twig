@@ -23,16 +23,37 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const nameInput = document.getElementById('{{ form.name.vars.id }}');
+        const unitSelect = document.getElementById('{{ form.unit.vars.id }}');
         const warning = document.getElementById('duplicate-warning');
         const checkUrl = '{{ path('app_ingredient_check_duplicate') }}';
         const excludeId = '{{ form.vars.value.id ?? '' }}';
+        let homonyms = [];
         let debounceTimer;
+
+        // Doublon = même nom ET même unité (bloquant) ; même nom dans une autre unité = variante autorisée
+        function render() {
+            const unit = unitSelect.value;
+            const label = d => `« ${d.name} » (${d.unit})`;
+            const sameUnit = homonyms.filter(d => d.unit === unit);
+            const otherUnits = homonyms.filter(d => d.unit !== unit);
+
+            warning.classList.remove('alert-warning', 'alert-info');
+            if (sameUnit.length > 0) {
+                warning.textContent = `⚠️ Cet ingrédient existe déjà dans cette unité : ${sameUnit.map(label).join(', ')}. Choisissez une autre unité pour créer une variante.`;
+                warning.classList.add('alert-warning');
+            } else if (otherUnits.length > 0) {
+                warning.textContent = `ℹ️ Vous avez déjà ${otherUnits.map(label).join(', ')}.` + (unit ? ' Une variante dans cette unité sera créée.' : ' Choisissez une autre unité pour créer une variante.');
+                warning.classList.add('alert-info');
+            }
+            warning.classList.toggle('d-none', homonyms.length === 0);
+        }
 
         nameInput.addEventListener('input', function () {
             clearTimeout(debounceTimer);
             const name = this.value.trim();
             if (name === '') {
-                warning.classList.add('d-none');
+                homonyms = [];
+                render();
                 return;
             }
 
@@ -41,17 +62,14 @@
                 const params = new URLSearchParams({ name: name, exclude: excludeId });
                 fetch(`${checkUrl}?${params}`)
                     .then(response => response.json())
-                    .then(duplicates => {
-                        if (duplicates.length === 0) {
-                            warning.classList.add('d-none');
-                            return;
-                        }
-                        const names = duplicates.map(d => `« ${d.name} » (${d.unit})`).join(', ');
-                        warning.textContent = `⚠️ Un ingrédient similaire existe déjà : ${names}.`;
-                        warning.classList.remove('d-none');
+                    .then(data => {
+                        homonyms = data;
+                        render();
                     })
                     .catch(err => console.error('Erreur vérification doublon:', err));
             }, 300);
         });
+
+        unitSelect.addEventListener('change', render);
     });
 </script>

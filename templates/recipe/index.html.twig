@@ -17,150 +17,83 @@
 
 {% block body %}
     <div class="container-fluid py-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mb-md-4">
-            <h1 class="h2 mb-0">
-                <i class="fas fa-utensils me-2"></i>
-                Mes recettes
-            </h1>
+        <div class="page-header">
+            <div>
+                <h1>Mes recettes</h1>
+                <p class="page-subtitle">{{ recipes|length }} recette{{ recipes|length > 1 ? 's' }}{{ search ? ' trouvée' ~ (recipes|length > 1 ? 's') }}</p>
+            </div>
             <a href="{{ path('app_recipe_new') }}" class="btn btn-primary">
-                <i class="fas fa-plus-circle me-2"></i>
-                Nouvelle recette
+                <i class="fas fa-plus me-2"></i>Nouvelle recette
             </a>
         </div>
 
-        <form method="get" action="{{ path('app_recipe_index') }}" class="row g-2 mb-3" role="search">
-            <div class="col-12 col-md-6">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="search" name="q" value="{{ search }}" class="form-control"
-                           placeholder="Rechercher une recette..." aria-label="Rechercher une recette">
-                </div>
+        <form method="get" action="{{ path('app_recipe_index') }}" class="d-flex flex-wrap gap-2 mb-3" role="search">
+            <div class="search-bar flex-fill" style="max-width: 32rem; min-width: 14rem">
+                <i class="fas fa-search"></i>
+                <input type="search" name="q" value="{{ search }}" class="form-control"
+                       placeholder="Rechercher une recette..." aria-label="Rechercher une recette">
             </div>
-            <div class="col-8 col-md-3">
-                <select name="order" class="form-select" aria-label="Trier les recettes" onchange="this.form.submit()">
-                    <option value="newest" {% if order == 'newest' %}selected{% endif %}>Plus récentes d'abord</option>
-                    <option value="oldest" {% if order == 'oldest' %}selected{% endif %}>Plus anciennes d'abord</option>
-                </select>
-            </div>
-            <div class="col-4 col-md-auto d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Filtrer</button>
-                {% if search %}
-                    <a href="{{ path('app_recipe_index', {'order': order}) }}" class="btn btn-outline-secondary" title="Effacer la recherche">
-                        <i class="fas fa-times"></i>
-                    </a>
-                {% endif %}
-            </div>
+            <select name="order" class="form-select rounded-pill w-auto" aria-label="Trier les recettes" onchange="this.form.submit()">
+                <option value="newest" {% if order == 'newest' %}selected{% endif %}>Plus récentes</option>
+                <option value="oldest" {% if order == 'oldest' %}selected{% endif %}>Plus anciennes</option>
+            </select>
+            {% if search %}
+                <a href="{{ path('app_recipe_index', {'order': order}) }}" class="btn btn-secondary rounded-pill" title="Effacer la recherche">
+                    <i class="fas fa-times"></i>
+                </a>
+            {% endif %}
         </form>
 
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="border-0">
-                                <i class="fas fa-book-open me-2 d-none d-md-inline"></i>
-                                Nom
-                            </th>
-                            <th class="border-0 d-none d-lg-table-cell">
-                                <i class="fas fa-calendar-alt me-2"></i>
-                                Dernière préparation
-                            </th>
-                            <th class="border-0 d-none d-md-table-cell">
-                                <i class="fas fa-redo me-2"></i>
-                                Nb fois
-                            </th>
-                            <th class="border-0 text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for recipe in recipes %}
-                        <tr>
-                            <td class="align-middle">
-                                <strong>{{ recipe.name }}</strong>
-                                <div class="d-md-none small text-muted mt-1">
-                                    {% if recipe.numberOfTimes == 0 %}
-                                        <span class="badge bg-secondary">0 fois</span>
-                                    {% elseif recipe.numberOfTimes < 5 %}
-                                        <span class="badge bg-success">{{ recipe.numberOfTimes }} fois</span>
-                                    {% elseif recipe.numberOfTimes < 10 %}
-                                        <span class="badge bg-primary">{{ recipe.numberOfTimes }} fois 🌟</span>
-                                    {% else %}
-                                        <span class="badge bg-warning text-dark">{{ recipe.numberOfTimes }} fois 🏆</span>
-                                    {% endif %}
-                                    <br>
-                                    {% if recipe.lastTimeDone %}
-                                        <i class="fas fa-calendar-alt me-1"></i>Dernière fois: {{ recipe.lastTimeDone|date('d/m/Y') }}
-                                    {% else %}
-                                        <i class="fas fa-calendar-alt me-1"></i>Jamais préparée
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td class="align-middle d-none d-lg-table-cell">
-                                {% if recipe.lastTimeDone %}
-                                    <span class="badge bg-info">{{ recipe.lastTimeDone|date('d/m/Y') }}</span>
-                                {% else %}
-                                    <span class="text-muted small">Jamais</span>
-                                {% endif %}
-                            </td>
-                            <td class="align-middle d-none d-md-table-cell">
+        <div class="card item-list">
+            {% for recipe in recipes %}
+                <div class="item-row">
+                    <span class="item-avatar">{{ recipe.name|first }}</span>
+                    <div class="item-main">
+                        <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}" class="item-title stretched-link">
+                            {{ recipe.name }}
+                        </a>
+                        <div class="item-meta">
+                            <span>
+                                <i class="fas fa-fire-burner me-1"></i>
                                 {% if recipe.numberOfTimes == 0 %}
-                                    <span class="badge bg-secondary">0</span>
-                                {% elseif recipe.numberOfTimes < 5 %}
-                                    <span class="badge bg-success">{{ recipe.numberOfTimes }}</span>
-                                {% elseif recipe.numberOfTimes < 10 %}
-                                    <span class="badge bg-primary">{{ recipe.numberOfTimes }} 🌟</span>
+                                    Jamais préparée
                                 {% else %}
-                                    <span class="badge bg-warning text-dark">{{ recipe.numberOfTimes }} 🏆</span>
+                                    {{ recipe.numberOfTimes }} fois{% if recipe.numberOfTimes >= 10 %} 🏆{% elseif recipe.numberOfTimes >= 5 %} 🌟{% endif %}
                                 {% endif %}
-                            </td>
-                            <td class="align-middle">
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <a href="{{ path('app_recipe_show', {'id': recipe.id}) }}"
-                                       class="btn btn-sm btn-info"
-                                       title="Voir les détails">
-                                        <i class="fas fa-eye me-1"></i>
-                                        <span class="d-none d-lg-inline">Voir</span>
-                                    </a>
-                                    <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}"
-                                       class="btn btn-sm btn-warning"
-                                       title="Modifier la recette">
-                                        <i class="fas fa-edit me-1"></i>
-                                        <span class="d-none d-lg-inline">Modifier</span>
-                                    </a>
-                                    <form method="post"
-                                          action="{{ path('app_recipe_delete', {'id': recipe.id}) }}"
-                                          onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');"
-                                          class="d-inline">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Supprimer la recette">
-                                            <i class="fas fa-trash-alt me-1"></i>
-                                            <span class="d-none d-lg-inline">Supprimer</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+                            </span>
+                            {% if recipe.lastTimeDone %}
+                                <span><i class="far fa-calendar me-1"></i>{{ recipe.lastTimeDone|date('d/m/Y') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <a href="{{ path('app_recipe_edit', {'id': recipe.id}) }}"
+                           class="btn btn-action" title="Modifier la recette" aria-label="Modifier {{ recipe.name }}">
+                            <i class="fas fa-pen"></i>
+                        </a>
+                        <form method="post"
+                              action="{{ path('app_recipe_delete', {'id': recipe.id}) }}"
+                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette recette ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ recipe.id) }}">
+                            <button type="submit" class="btn btn-action btn-action-danger" title="Supprimer la recette" aria-label="Supprimer {{ recipe.name }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-book-open"></i></div>
+                    {% if search %}
+                        <p class="mb-0">Aucune recette ne correspond à « {{ search }} »</p>
                     {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">
-                                <i class="fas fa-book fa-2x mb-3 d-block"></i>
-                                {% if search %}
-                                    Aucune recette ne correspond à « {{ search }} »
-                                {% else %}
-                                Aucune recette
-                                <div class="mt-2">
-                                    <a href="{{ path('app_recipe_new') }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-plus-circle me-1"></i>
-                                        Ajouter ma première recette
-                                    </a>
-                                </div>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        <p>Aucune recette pour le moment</p>
+                        <a href="{{ path('app_recipe_new') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Ajouter ma première recette
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}

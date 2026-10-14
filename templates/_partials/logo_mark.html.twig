@@ -1,0 +1,14 @@
+{# Logo Cuisinotes : toque de chef dont le corps est une page de notes. Couleur = currentColor, trait = --logo-ink #}
+<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"{% if class is defined %} class="{{ class }}"{% endif %}>
+    <g fill="currentColor">
+        <circle cx="20.5" cy="25" r="9.5"/>
+        <circle cx="32" cy="18.5" r="12"/>
+        <circle cx="43.5" cy="25" r="9.5"/>
+        <rect x="18" y="24" width="28" height="22" rx="3"/>
+        <rect x="16" y="47.5" width="32" height="7" rx="3.5"/>
+    </g>
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.2">
+        <path d="M23 34.5l2.6 2.6 4.6-5.2" stroke="#f26b3a"/>
+        <path d="M33.5 34.5H41M23 41.5H41" stroke="var(--logo-ink, #1d6b4f)" opacity=".45"/>
+    </g>
+</svg>
