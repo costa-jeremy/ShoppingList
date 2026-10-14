@@ -105,10 +105,7 @@
 
     <div class="flex-fill main-column">
         <header class="app-topbar d-md-none">
-            <a href="{{ path('app_home') }}" class="brand" aria-label="Cuisinotes, accueil">
-                <span class="brand-mark">{{ include('_partials/logo_mark.html.twig') }}</span>
-            </a>
-            <span class="app-topbar-title text-truncate">{{ block('title') }}</span>
+            {{ include('_partials/brand.html.twig') }}
         </header>
 
         <main class="main-content">

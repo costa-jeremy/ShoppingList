@@ -233,18 +233,15 @@ h4, h5, h6, .h4, .h5, .h6, .card-header .h5, .card-header h5 {
   border-bottom: 1px solid rgba($border-color, .7);
 
   .brand-mark {
-    width: 2.1rem;
-    height: 2.1rem;
-    border-radius: .65rem;
-    box-shadow: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .7rem;
+    box-shadow: 0 3px 8px rgba($basil, .25);
   }
-}
 
-.app-topbar-title {
-  min-width: 0;
-  font-family: $headings-font-family;
-  font-size: 1.15rem;
-  font-weight: 600;
+  .brand-word {
+    font-size: 1.4rem;
+  }
 }
 
 .app-tabbar {
